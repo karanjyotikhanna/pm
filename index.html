@@ -57,7 +57,7 @@
             font-size: 0.6rem; color: #e8d5a3;
         }
 
-        .container { max-width: 1120px; margin: 0 auto; padding: 20px 16px; }
+        .container { max-width: 1180px; margin: 0 auto; padding: 20px 16px; }
 
         .stats-row { display: flex; gap: 12px; margin-bottom: 16px; }
         .stat-card {
@@ -126,8 +126,9 @@
         }
         .badge-status.in-progress { background: #ebf8ff; color: #2b6cb0; border: 1px solid #90cdf4; }
         .badge-status.not-started { background: #edf2f7; color: #718096; border: 1px solid #cbd5e0; }
+        .badge-status.completed { background: #f0fff4; color: #276749; border: 1px solid #9ae6b4; }
         .badge-dept { background: #faf5ff; color: #6b46c1; border: 1px solid #d6bcfa; font-weight: 500; }
-        .notes-cell { font-size: 0.72rem; color: #4a5568; line-height: 1.35; word-wrap: break-word; }
+        .notes-cell { font-size: 0.78rem; color: #4a5568; line-height: 1.35; word-wrap: break-word; }
 
         .footer { text-align: center; padding: 14px; font-size: 0.62rem; color: #a0aec0; }
         .footer span { color: #5a6a7e; }
@@ -167,7 +168,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon purple">⭐</div>
-                <div><div class="stat-value" id="statHighPriority">0</div><div class="stat-label">High Priority</div></div>
+                <div><div class="stat-value" id="statHighPriority">0</div><div class="stat-label">High Priority (Date Unknown)</div></div>
             </div>
         </div>
 
@@ -180,13 +181,14 @@
                 <table>
                     <thead>
                         <tr>
+                            <th style="width:4%;">#</th>
                             <th style="width:8%;">ID</th>
-                            <th style="width:15%;">Initiative / Task</th>
-                            <th style="width:25%;">Description</th>
+                            <th style="width:14%;">Initiative / Task</th>
+                            <th style="width:23%;">Description</th>
                             <th style="width:8%;">Status</th>
                             <th style="width:10%;">Due Date</th>
                             <th style="width:14%;">Dept / Stakeholder</th>
-                            <th style="width:20%;">Notes / Dependencies</th>
+                            <th style="width:19%;">Notes / Dependencies</th>
                         </tr>
                     </thead>
                     <tbody id="activeTableBody"></tbody>
@@ -208,37 +210,67 @@
                     task: "Flexi Benefits Implementation & Employee Declaration Email",
                     description: "Implement Flexi Benefits across Tetr & MU. Float email with declaration timelines. MoM: claim/salary components, declaration windows, tax impact.",
                     status: "In Progress",
-                    priority: "Medium",
+                    priority: "High",
                     dueDate: "TBD (awaiting Pulak)",
                     dept: "Finance/HR",
-                    notes: "Pulak to implement & send email. Karan tracking for closure per Ojasvi."
+                    notes: "Pulak to implement & send email. Karan sent follow-up email to Pulak on 27th April. Karan tracking for closure per Ojasvi."
                 },
                 {
-                    id: "ORBIT-001",
-                    task: "New Orbit System – Process & Compliances Training",
-                    description: "Orbit live from 1 Apr'26. 1‑hour meeting on raising requests & uploading invoices. Ensure visibility on BU/Course/Cohort expenses.",
-                    status: "In Progress",
+                    id: "ORBIT-NIKHIL",
+                    task: "Orbit Training – Nikhil Mittal (Executive Programs)",
+                    description: "Conduct 1‑hour Orbit training on raising requests & uploading invoices. Ensure visibility on BU/Course/Cohort expenses.",
+                    status: "Meeting Scheduled",
                     priority: "Medium",
-                    dueDate: "28 Apr 2026, 1–2 PM",
-                    dept: "Finance + Dept Heads",
-                    notes: "Karan Singh sent invite. All stakeholders incl. producers & Nagpal to attend."
+                    dueDate: "28 Apr 2026, 1 PM",
+                    dept: "Finance + Executive Ed (Nikhil)",
+                    notes: "Karan Singh sent invite. Nikhil's team to attend."
+                },
+                {
+                    id: "ORBIT-SWATI",
+                    task: "Orbit Training – Swati Ganeti (UG Programs)",
+                    description: "Conduct 1‑hour Orbit training for Swati & team. Same agenda as above.",
+                    status: "Meeting Scheduled",
+                    priority: "Medium",
+                    dueDate: "28 Apr 2026, 11 AM",
+                    dept: "Finance + UG (Swati)",
+                    notes: "Meeting arranged."
+                },
+                {
+                    id: "ORBIT-DIVYAM",
+                    task: "Orbit Training – Divyam Goenka (Marketing)",
+                    description: "Conduct 1‑hour Orbit training for Divyam & team (including producers & Nagpal).",
+                    status: "Meeting Scheduled",
+                    priority: "Medium",
+                    dueDate: "29 Apr 2026, 4:30 PM",
+                    dept: "Finance + Marketing (Divyam)",
+                    notes: "Meeting confirmed. All producers & Nagpal requested to attend."
+                },
+                {
+                    id: "ORBIT-YASHIKA",
+                    task: "Orbit Training – Yashika Hasija (Operations)",
+                    description: "Conduct 1‑hour Orbit training for Yashika & operations team.",
+                    status: "Completed",
+                    priority: "Medium",
+                    dueDate: "28 Apr 2026, 4 PM (done)",
+                    dept: "Finance + Operations (Yashika)",
+                    notes: "Meeting held on 28 Apr."
                 },
                 {
                     id: "OPS-COMP-001",
                     task: "Operations Compliances – Master Tracker & Consultant Meetings",
                     description: "Complete past & ongoing Ops compliances. Build master tracker (licenses, insurance, PF/ESI) with 15‑day dashboard. Meet 2 consultants by Wed.",
                     status: "In Progress",
-                    priority: "High",
+                    priority: "Medium",
                     dueDate: "Consultant meetings by 29 Apr",
                     dept: "Operations (Yashika)",
-                    notes: "Yashika to clarify scope. Karan proposed Mon 5‑5:30 call. Next: finalize consultants."
+                    notes: "Karan followed-up on 26th April. Yashika to clarify scope & finalize consultants."
                 },
                 {
                     id: "UG-PL-001",
                     task: "UG Programs – FY25-26 P&L Review",
                     description: "Review FY25-26 P&L with Swati Ganeti. Abhishek & Abhilash to prepare all presentation files.",
                     status: "Meeting Scheduled",
-                    priority: "High",
+                    priority: "Medium",
                     dueDate: "4 May 2026, 12–1 PM",
                     dept: "UG / Finance",
                     notes: "Invite sent by Karan Khanna. Swati confirmed. Files to be ready."
@@ -248,7 +280,7 @@
                     task: "Executive Programs – FY25-26 P&L Review",
                     description: "Review FY25-26 P&L for Executive Programs with Nikhil Mittal. Slot now confirmed.",
                     status: "Meeting Scheduled",
-                    priority: "High",
+                    priority: "Medium",
                     dueDate: "4 May 2026, 4–5 PM",
                     dept: "Executive Ed / Finance",
                     notes: "Karan has sent invite to Nikhil & team. Files to be prepared by Abhishek/Abhilash."
@@ -261,7 +293,7 @@
                     priority: "High",
                     dueDate: "Tracker list from Anil; then ongoing",
                     dept: "MU Finance / Compliance",
-                    notes: "Anil to provide current compliance owners. Dashboard every 15 days."
+                    notes: "Anil to provide current compliance owners. Dashboard every 15 days. Karan followed up on 27th April. Awaiting response."
                 },
                 {
                     id: "TETR-FIN-COMP-001",
@@ -271,17 +303,57 @@
                     priority: "High",
                     dueDate: "Tracker updating; consultant finalization",
                     dept: "Tetr Finance / Compliance",
-                    notes: "Vishal updating tracker, will publish dashboard every 15 days."
+                    notes: "Tracker received from Vishal on 27th April. Ojasvi to discuss with Karan. Dashboard to be published every 15 days."
                 },
                 {
                     id: "HR-COMP-001",
                     task: "HR Compliances – Master Tracker & Consultant Meetings",
                     description: "Complete all past & ongoing HR compliances. Master tracker with 15‑day dashboard. Meet 2 HR consultants by Wed.",
                     status: "In Progress",
-                    priority: "High",
+                    priority: "Medium",
                     dueDate: "Consultant meetings by 29 Apr",
                     dept: "HR (Anil Taneja)",
-                    notes: "Anil confirmed a compliance tracker exists. Awaiting Pulak Verma to share tracker link. Consultant meetings still to be arranged. Karan tracking for dashboards."
+                    notes: "Anil confirmed a compliance tracker exists. Awaiting Pulak Verma to share tracker link. Consultant meetings still to be arranged."
+                },
+                {
+                    id: "EMP-ALLOC-001",
+                    task: "Outgrow / Non-outgrow Employee Allocation",
+                    description: "Collect historical allocation data (Outgrow Yes/No) for team members from Jan 2024 through Mar 2026. Spreadsheet with two tabs sent to Tarun, Naman & Rajat.<br>Simple Outgrow bifurcation (Y/N) also requested from Tarun and Naman for all respective team members on 27th April.",
+                    status: "Awaiting Responses",
+                    priority: "Medium",
+                    dueDate: "27 Apr 2026 (EOD)",
+                    dept: "Tarun / Naman / Rajat + CFO Office",
+                    notes: "Karan followed up via call on 27 Apr. Awaiting filled sheets from all three."
+                },
+                {
+                    id: "LP-IND-001",
+                    task: "Loan Partners – India",
+                    description: "<span style='font-weight:bold;color:#1a5c2a;'>Onboarded:</span> Auxilo, IDFC First Bank, Tata Capital, Nomad Credit, Credila (Unofficial).<br><span style='font-weight:bold;color:#0b2b5c;'>Pending:</span> ICICI Bank.",
+                    status: "In Progress",
+                    priority: "High",
+                    dueDate: "Ongoing",
+                    dept: "Karan Khanna & Sarthak Kaul",
+                    notes: "Continue onboarding pending ICICI Bank. Monitor partnerships."
+                },
+                {
+                    id: "LP-NON-001",
+                    task: "Loan Partners – Non-India",
+                    description: "<span style='font-weight:bold;color:#1a5c2a;'>Onboarded:</span> Student Hero (South Africa), Spark Finance (Australia & New Zealand).<br><span style='font-weight:bold;color:#0b2b5c;'>Pending:</span> Edly (USA).",
+                    status: "In Progress",
+                    priority: "High",
+                    dueDate: "Ongoing",
+                    dept: "Karan Khanna & Sarthak Kaul",
+                    notes: "Focus on pending Edly partnership. Track global loan options."
+                },
+                {
+                    id: "VPO-INT-001",
+                    task: "VPO Compliance (Internal)",
+                    description: "Internal compliance for VPO. Details to be expanded as scope becomes clear.",
+                    status: "In Progress",
+                    priority: "High",
+                    dueDate: "TBD",
+                    dept: "CFO Office",
+                    notes: ""
                 }
             ]
         };
@@ -290,26 +362,29 @@
             const s = (status || '').toLowerCase();
             if (s.includes('progress') || s.includes('scheduled')) return 'in-progress';
             if (s.includes('complete') || s.includes('done')) return 'completed';
+            if (s.includes('await')) return 'not-started';
             return 'not-started';
         }
 
         function renderTable() {
             const tbody = document.getElementById('activeTableBody');
             const items = programData.active;
-            document.getElementById('countActive').textContent = items.length + ' item' + (items.length !== 1 ? 's' : '');
+            document.getElementById('countActive').textContent = items.length + ' items';
 
             if (items.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:#a0aec0;">No active initiatives yet.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:#a0aec0;">No active initiatives yet.</td></tr>`;
                 return;
             }
 
-            tbody.innerHTML = items.map(item => {
+            tbody.innerHTML = items.map((item, index) => {
                 const isHigh = item.priority === 'High';
+                const sno = index + 1;
                 return `
                 <tr>
+                    <td style="text-align:center;">${sno}</td>
                     <td><span class="item-id">${isHigh ? '★ ' : ''}${esc(item.id)}</span></td>
                     <td><span class="task-title">${esc(item.task)}</span></td>
-                    <td><span class="task-desc">${esc(item.description)}</span></td>
+                    <td><span class="task-desc">${item.description}</span></td>
                     <td><span class="badge badge-status ${getStatusClass(item.status)}">${esc(item.status)}</span></td>
                     <td style="white-space:nowrap;">${esc(item.dueDate)}</td>
                     <td><span class="badge badge-dept">${esc(item.dept)}</span></td>
