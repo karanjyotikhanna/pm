@@ -86,6 +86,7 @@
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--border);
             overflow: hidden;
+            margin-bottom: 22px;
         }
         .section-header {
             padding: 12px 16px;
@@ -95,6 +96,7 @@
         }
         .section-header h2 { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px; }
         .dot.active { width: 7px; height: 7px; border-radius: 50%; background: #3182ce; }
+        .dot.completed { width: 7px; height: 7px; border-radius: 50%; background: #48bb78; }
         .section-count {
             font-size: 0.65rem; color: var(--text-secondary);
             background: #edf2f7; padding: 2px 8px; border-radius: 10px;
@@ -172,6 +174,7 @@
             </div>
         </div>
 
+        <!-- Active Initiatives Section -->
         <div class="section-card">
             <div class="section-header">
                 <h2><span class="dot active"></span> Active Initiatives</h2>
@@ -195,6 +198,31 @@
                 </table>
             </div>
         </div>
+
+        <!-- Completed Tasks Section -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2><span class="dot completed"></span> Completed Tasks</h2>
+                <span class="section-count" id="countCompleted">0 items</span>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:4%;">#</th>
+                            <th style="width:8%;">ID</th>
+                            <th style="width:14%;">Initiative / Task</th>
+                            <th style="width:23%;">Description</th>
+                            <th style="width:8%;">Status</th>
+                            <th style="width:10%;">Completed Date</th>
+                            <th style="width:14%;">Dept / Stakeholder</th>
+                            <th style="width:19%;">Notes / Dependencies</th>
+                        </tr>
+                    </thead>
+                    <tbody id="completedTableBody"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <div class="footer">
@@ -213,7 +241,7 @@
                     priority: "High",
                     dueDate: "TBD (awaiting Pulak)",
                     dept: "Finance/HR",
-                    notes: "Pulak to implement & send email. Karan sent follow-up email to Pulak on 27th April. Karan tracking for closure per Ojasvi."
+                    notes: "Pulak to implement & send email. Karan sent follow-up email to Pulak on 27th April. Karan followed up with Pulak again on 28th April. Karan tracking for closure per Ojasvi."
                 },
                 {
                     id: "ORBIT-NIKHIL",
@@ -226,16 +254,6 @@
                     notes: "Karan Singh sent invite. Nikhil's team to attend."
                 },
                 {
-                    id: "ORBIT-SWATI",
-                    task: "Orbit Training – Swati Ganeti (UG Programs)",
-                    description: "Conduct 1‑hour Orbit training for Swati & team. Same agenda as above.",
-                    status: "Meeting Scheduled",
-                    priority: "Medium",
-                    dueDate: "28 Apr 2026, 11 AM",
-                    dept: "Finance + UG (Swati)",
-                    notes: "Meeting arranged."
-                },
-                {
                     id: "ORBIT-DIVYAM",
                     task: "Orbit Training – Divyam Goenka (Marketing)",
                     description: "Conduct 1‑hour Orbit training for Divyam & team (including producers & Nagpal).",
@@ -244,16 +262,6 @@
                     dueDate: "29 Apr 2026, 4:30 PM",
                     dept: "Finance + Marketing (Divyam)",
                     notes: "Meeting confirmed. All producers & Nagpal requested to attend."
-                },
-                {
-                    id: "ORBIT-YASHIKA",
-                    task: "Orbit Training – Yashika Hasija (Operations)",
-                    description: "Conduct 1‑hour Orbit training for Yashika & operations team.",
-                    status: "Completed",
-                    priority: "Medium",
-                    dueDate: "28 Apr 2026, 4 PM (done)",
-                    dept: "Finance + Operations (Yashika)",
-                    notes: "Meeting held on 28 Apr."
                 },
                 {
                     id: "OPS-COMP-001",
@@ -323,7 +331,7 @@
                     priority: "Medium",
                     dueDate: "27 Apr 2026 (EOD)",
                     dept: "Tarun / Naman / Rajat + CFO Office",
-                    notes: "Karan followed up via call on 27 Apr. Awaiting filled sheets from all three."
+                    notes: "Karan followed up via call on 27 Apr. Sent follow-up emails to all three on 28th April. Awaiting filled sheets from all three."
                 },
                 {
                     id: "LP-IND-001",
@@ -355,6 +363,28 @@
                     dept: "CFO Office",
                     notes: ""
                 }
+            ],
+            completed: [
+                {
+                    id: "ORBIT-YASHIKA",
+                    task: "Orbit Training – Yashika Hasija (Operations)",
+                    description: "Conduct 1‑hour Orbit training for Yashika & operations team.",
+                    status: "Completed",
+                    priority: "Medium",
+                    dueDate: "28 Apr 2026, 4 PM (done)",
+                    dept: "Finance + Operations (Yashika)",
+                    notes: "Meeting held on 28 Apr."
+                },
+                {
+                    id: "ORBIT-SWATI",
+                    task: "Orbit Training – Swati Ganeti (UG Programs)",
+                    description: "Conduct 1‑hour Orbit training for Swati & team. Same agenda as above.",
+                    status: "Completed",
+                    priority: "Medium",
+                    dueDate: "28 Apr 2026, 11 AM (done)",
+                    dept: "Finance + UG (Swati)",
+                    notes: "Meeting completed on 28 Apr."
+                }
             ]
         };
 
@@ -366,7 +396,7 @@
             return 'not-started';
         }
 
-        function renderTable() {
+        function renderActiveTable() {
             const tbody = document.getElementById('activeTableBody');
             const items = programData.active;
             document.getElementById('countActive').textContent = items.length + ' items';
@@ -393,6 +423,32 @@
             }).join('');
         }
 
+        function renderCompletedTable() {
+            const tbody = document.getElementById('completedTableBody');
+            const items = programData.completed;
+            document.getElementById('countCompleted').textContent = items.length + ' items';
+
+            if (items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:#a0aec0;">No completed tasks yet.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = items.map((item, index) => {
+                const sno = index + 1;
+                return `
+                <tr>
+                    <td style="text-align:center;">${sno}</td>
+                    <td><span class="item-id">${esc(item.id)}</span></td>
+                    <td><span class="task-title">${esc(item.task)}</span></td>
+                    <td><span class="task-desc">${item.description}</span></td>
+                    <td><span class="badge badge-status completed">${esc(item.status)}</span></td>
+                    <td style="white-space:nowrap;">${esc(item.dueDate)}</td>
+                    <td><span class="badge badge-dept">${esc(item.dept)}</span></td>
+                    <td><span class="notes-cell">${esc(item.notes)}</span></td>
+                </tr>`;
+            }).join('');
+        }
+
         function updateStats() {
             const items = programData.active;
             const total = items.length;
@@ -411,7 +467,8 @@
         }
 
         function renderAll() {
-            renderTable();
+            renderActiveTable();
+            renderCompletedTable();
             updateStats();
             document.getElementById('lastUpdated').textContent = new Date().toLocaleString('en-US', {
                 year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -422,14 +479,30 @@
 
         window.addActive = function(item) {
             if (!item.id || !item.task) return;
-            if (programData.active.find(i => i.id === item.id)) return;
+            if (programData.active.find(i => i.id === item.id) || programData.completed.find(i => i.id === item.id)) return;
             programData.active.push(item);
             renderAll();
         };
-        window.removeItem = function(id) {
+        window.moveToCompleted = function(id) {
             const idx = programData.active.findIndex(i => i.id === id);
-            if (idx !== -1) programData.active.splice(idx, 1);
-            renderAll();
+            if (idx !== -1) {
+                const item = programData.active.splice(idx, 1)[0];
+                item.status = "Completed";
+                programData.completed.push(item);
+                renderAll();
+            }
+        };
+        window.removeItem = function(id) {
+            let idx = programData.active.findIndex(i => i.id === id);
+            if (idx !== -1) {
+                programData.active.splice(idx, 1);
+                return renderAll();
+            }
+            idx = programData.completed.findIndex(i => i.id === id);
+            if (idx !== -1) {
+                programData.completed.splice(idx, 1);
+                renderAll();
+            }
         };
         window.printData = () => console.log(JSON.stringify(programData, null, 2));
     </script>
