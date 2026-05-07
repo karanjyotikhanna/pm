@@ -90,6 +90,7 @@
         }
         .section-header h2 { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px; }
         .dot.active { width: 7px; height: 7px; border-radius: 50%; background: #3182ce; }
+        .dot.onhold { width: 7px; height: 7px; border-radius: 50%; background: #ecc94b; }
         .dot.completed { width: 7px; height: 7px; border-radius: 50%; background: #48bb78; }
         .section-count {
             font-size: 0.65rem; color: var(--text-secondary);
@@ -119,6 +120,7 @@
             text-transform: uppercase; white-space: nowrap;
         }
         .badge-status.in-progress { background: #ebf8ff; color: #2b6cb0; border: 1px solid #90cdf4; }
+        .badge-status.on-hold { background: #fffff0; color: #975a16; border: 1px solid #fbd38d; }
         .badge-status.not-started { background: #edf2f7; color: #718096; border: 1px solid #cbd5e0; }
         .badge-status.completed { background: #f0fff4; color: #276749; border: 1px solid #9ae6b4; }
         .badge-dept { background: #faf5ff; color: #6b46c1; border: 1px solid #d6bcfa; font-weight: 500; }
@@ -164,6 +166,7 @@
             </div>
         </div>
 
+        <!-- Active Initiatives Section -->
         <div class="section-card">
             <div class="section-header">
                 <h2><span class="dot active"></span> Active Initiatives</h2>
@@ -188,6 +191,32 @@
             </div>
         </div>
 
+        <!-- On Hold Section -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2><span class="dot onhold"></span> On Hold</h2>
+                <span class="section-count" id="countOnHold">0 items</span>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:4%;">#</th>
+                            <th style="width:8%;">ID</th>
+                            <th style="width:14%;">Initiative / Task</th>
+                            <th style="width:23%;">Description</th>
+                            <th style="width:8%;">Status</th>
+                            <th style="width:10%;">Due Date</th>
+                            <th style="width:14%;">Dept / Stakeholder</th>
+                            <th style="width:19%;">Notes / Dependencies</th>
+                        </tr>
+                    </thead>
+                    <tbody id="onHoldTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Completed Tasks Section -->
         <div class="section-card">
             <div class="section-header">
                 <h2><span class="dot completed"></span> Completed Tasks</h2>
@@ -232,16 +261,6 @@
                     notes: "28 Apr: Karan followed up; Pulak confirmed he will share timelines soon. Ojasvi asked for timelines by 29 Apr. 29 Apr: Pulak shared plan – Policy Formulation by 11 May; Darwinbox Capability & testing by 14 May. Ojasvi acknowledged and asked for final go‑live date. 6 May: Karan emailed Pulak requesting the final go‑live date. Karan tracking."
                 },
                 {
-                    id: "OPS-COMP-001",
-                    task: "Operations Compliances – Master Tracker & Consultant Meetings",
-                    description: "Complete past & ongoing Ops compliances. Build master tracker (licenses, insurance, PF/ESI) with 15‑day dashboard. Meet 2 consultants by Wed.",
-                    status: "In Progress",
-                    priority: "Medium",
-                    dueDate: "Consultant meetings by 29 Apr (overdue)",
-                    dept: "Operations (Yashika / Zaid)",
-                    notes: "Karan followed-up on 26th April. Yashika to clarify scope & finalize consultants. Karan sent follow-up email to Yashika & Zaid on 1st May requesting a time to connect. 6 May: Karan followed up again with Yashika & Zaid requesting a suitable time to connect this week."
-                },
-                {
                     id: "MU-FIN-COMP-001",
                     task: "Masters' Union – Finance & Secretarial Compliances",
                     description: "Complete all past & ongoing MU finance/secretarial compliances. Master tracker with 15‑day dashboard (TDS, GST, ITR, filings).",
@@ -282,6 +301,16 @@
                     notes: "Karan checked in with Chris (Edly) on 30 Apr. Chris replied 30 Apr seeking clarification: can Edly face the US institutions for certification & disbursement based on student enrollment in those institutions? Pending response from Karan/Ojasvi/Sarthak."
                 },
                 {
+                    id: "DB-SPLIT-001",
+                    task: "Darwinbox Split of Masters' Union and Tetr",
+                    description: "Separate the Darwinbox instance or configuration for Masters' Union and Tetr College of Business to ensure independent HR operations and data segregation.",
+                    status: "In Progress",
+                    priority: "Medium",
+                    dueDate: "TBD",
+                    dept: "HR/Tech",
+                    notes: "New initiative. Timelines and technical requirements to be defined."
+                },
+                {
                     id: "VPO-INT-001",
                     task: "VPO Compliance (Internal)",
                     description: "Internal compliance for VPO. Details to be expanded as scope becomes clear.",
@@ -292,14 +321,96 @@
                     notes: ""
                 },
                 {
-                    id: "DB-SPLIT-001",
-                    task: "Darwinbox Split of Masters' Union and Tetr",
-                    description: "Separate the Darwinbox instance or configuration for Masters' Union and Tetr College of Business to ensure independent HR operations and data segregation.",
+                    id: "PO-ORBIT-001",
+                    task: "PO Timelines in Orbit",
+                    description: "Ensure communication of PO timelines in Orbit to teams via Email/WhatsApp.",
                     status: "In Progress",
                     priority: "Medium",
                     dueDate: "TBD",
-                    dept: "HR/Tech",
-                    notes: "New initiative. Timelines and technical requirements to be defined."
+                    dept: "Finance (Anil Kumar) / Nikita / Karan",
+                    notes: "Karan emailed Anil Kumar regarding the communication. Nikita and Karan to be marked on these communications. Karan willing to automate the process if needed."
+                },
+                {
+                    id: "MU-MIS-001",
+                    task: "MU MIS",
+                    description: "MU MIS reporting and flow understanding.",
+                    status: "In Progress",
+                    priority: "Medium",
+                    dueDate: "TBD",
+                    dept: "Nikita (Lead)",
+                    notes: "Nikita taken lead on the same. Nikita understanding the flow currently."
+                },
+                {
+                    id: "DB-TAG-001",
+                    task: "Darwinbox update - department lock, sub-departments, designations",
+                    description: "Update Darwinbox tagging for department lock, sub-departments, and designations.",
+                    status: "In Progress",
+                    priority: "Medium",
+                    dueDate: "TBD",
+                    dept: "HR/Tech (Pulak, Anil, Parinita)",
+                    notes: "Karan sent follow-up regarding Darwinbox tagging to Pulak, Anil, Parinita on 7 May."
+                },
+                {
+                    id: "TA-LEGAL-001",
+                    task: "TA legal profile",
+                    description: "Hiring for TA legal profile.",
+                    status: "In Progress",
+                    priority: "Medium",
+                    dueDate: "TBD",
+                    dept: "HR/Legal",
+                    notes: "Interview conducted with Rishabh Mehta on 6 May. Interview scheduled with Shitij on 7 May."
+                },
+                {
+                    id: "SURAJ-DIFC-001",
+                    task: "Suraj DIFC & EGM agenda",
+                    description: "DIFC and EGM agenda preparation.",
+                    status: "In Progress",
+                    priority: "Medium",
+                    dueDate: "TBD",
+                    dept: "Suraj / CFO Office",
+                    notes: "Suraj to update Ojasvi directly."
+                },
+                {
+                    id: "AUD-VISHAL-001",
+                    task: "Auditor appointment - Vishal",
+                    description: "Appointment of auditor.",
+                    status: "In Progress",
+                    priority: "Medium",
+                    dueDate: "TBD",
+                    dept: "Vishal / CFO Office",
+                    notes: "Vishal to update Ojasvi directly."
+                },
+                {
+                    id: "KARAN-DASH-001",
+                    task: "Karan Dashboards for MU & Tetr",
+                    description: "Dashboard development for MU and Tetr.",
+                    status: "In Progress",
+                    priority: "Medium",
+                    dueDate: "TBD",
+                    dept: "Karan Khanna / CFO Office",
+                    notes: "Karan to find time to discuss with Ojasvi."
+                },
+                {
+                    id: "AVENDUS-001",
+                    task: "Avendus",
+                    description: "Avendus related engagement.",
+                    status: "In Progress",
+                    priority: "Medium",
+                    dueDate: "TBD",
+                    dept: "Karan Khanna / CFO Office",
+                    notes: "Karan reminding Ojasvi daily."
+                }
+            ],
+            onHold: [
+                {
+                    id: "OPS-COMP-001",
+                    task: "Operations Compliances – Master Tracker & Consultant Meetings",
+                    description: "Complete past & ongoing Ops compliances. Build master tracker (licenses, insurance, PF/ESI) with 15‑day dashboard. Meet 2 consultants by Wed.",
+                    status: "On Hold",
+                    priority: "Medium",
+                    dueDate: "On Hold",
+                    dept: "Operations (Yashika / Zaid / Nikunj)",
+                    notes: "Karan followed-up on 26th April. Yashika to clarify scope & finalize consultants. Karan sent follow-up email to Yashika & Zaid on 1st May requesting a time to connect. 6 May: Karan followed up again with Yashika & Zaid. 6 May: Yashika replied; asked Nikunj Bhatia to schedule a call. Confirmed external agency will be hired (as discussed with Ojasvi). Yashika requested Karan to connect the team with agency contacts. 7 May: Placed on hold."
                 }
             ],
             completed: [
@@ -390,6 +501,7 @@
             const s = (status || '').toLowerCase();
             if (s.includes('progress') || s.includes('scheduled')) return 'in-progress';
             if (s.includes('complete') || s.includes('done')) return 'completed';
+            if (s.includes('hold')) return 'on-hold';
             if (s.includes('await')) return 'not-started';
             return 'not-started';
         }
@@ -398,12 +510,10 @@
             const tbody = document.getElementById('activeTableBody');
             const items = programData.active;
             document.getElementById('countActive').textContent = items.length + ' items';
-
             if (items.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:#a0aec0;">No active initiatives yet.</td></tr>`;
                 return;
             }
-
             tbody.innerHTML = items.map((item, index) => {
                 const isHigh = item.priority === 'High';
                 const sno = index + 1;
@@ -421,16 +531,38 @@
             }).join('');
         }
 
+        function renderOnHoldTable() {
+            const tbody = document.getElementById('onHoldTableBody');
+            const items = programData.onHold;
+            document.getElementById('countOnHold').textContent = items.length + ' items';
+            if (items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:#a0aec0;">No items on hold.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = items.map((item, index) => {
+                const sno = index + 1;
+                return `
+                <tr>
+                    <td style="text-align:center;">${sno}</td>
+                    <td><span class="item-id">${esc(item.id)}</span></td>
+                    <td><span class="task-title">${esc(item.task)}</span></td>
+                    <td><span class="task-desc">${item.description}</span></td>
+                    <td><span class="badge badge-status on-hold">${esc(item.status)}</span></td>
+                    <td style="white-space:nowrap;">${esc(item.dueDate)}</td>
+                    <td><span class="badge badge-dept">${esc(item.dept)}</span></td>
+                    <td><span class="notes-cell">${esc(item.notes)}</span></td>
+                </tr>`;
+            }).join('');
+        }
+
         function renderCompletedTable() {
             const tbody = document.getElementById('completedTableBody');
             const items = programData.completed;
             document.getElementById('countCompleted').textContent = items.length + ' items';
-
             if (items.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:#a0aec0;">No completed tasks yet.</td></tr>`;
                 return;
             }
-
             tbody.innerHTML = items.map((item, index) => {
                 const sno = index + 1;
                 return `
@@ -466,6 +598,7 @@
 
         function renderAll() {
             renderActiveTable();
+            renderOnHoldTable();
             renderCompletedTable();
             updateStats();
             document.getElementById('lastUpdated').textContent = new Date().toLocaleString('en-US', {
@@ -477,14 +610,31 @@
 
         window.addActive = function(item) {
             if (!item.id || !item.task) return;
-            if (programData.active.find(i => i.id === item.id) || programData.completed.find(i => i.id === item.id)) return;
+            if (programData.active.find(i => i.id === item.id) || programData.onHold.find(i => i.id === item.id) || programData.completed.find(i => i.id === item.id)) return;
             programData.active.push(item);
             renderAll();
         };
-        window.moveToCompleted = function(id) {
+        window.moveToOnHold = function(id) {
             const idx = programData.active.findIndex(i => i.id === id);
             if (idx !== -1) {
                 const item = programData.active.splice(idx, 1)[0];
+                item.status = "On Hold";
+                programData.onHold.push(item);
+                renderAll();
+            }
+        };
+        window.moveToCompleted = function(id) {
+            let idx = programData.active.findIndex(i => i.id === id);
+            if (idx !== -1) {
+                const item = programData.active.splice(idx, 1)[0];
+                item.status = "Completed";
+                programData.completed.push(item);
+                renderAll();
+                return;
+            }
+            idx = programData.onHold.findIndex(i => i.id === id);
+            if (idx !== -1) {
+                const item = programData.onHold.splice(idx, 1)[0];
                 item.status = "Completed";
                 programData.completed.push(item);
                 renderAll();
@@ -492,15 +642,11 @@
         };
         window.removeItem = function(id) {
             let idx = programData.active.findIndex(i => i.id === id);
-            if (idx !== -1) {
-                programData.active.splice(idx, 1);
-                return renderAll();
-            }
+            if (idx !== -1) { programData.active.splice(idx, 1); return renderAll(); }
+            idx = programData.onHold.findIndex(i => i.id === id);
+            if (idx !== -1) { programData.onHold.splice(idx, 1); return renderAll(); }
             idx = programData.completed.findIndex(i => i.id === id);
-            if (idx !== -1) {
-                programData.completed.splice(idx, 1);
-                renderAll();
-            }
+            if (idx !== -1) { programData.completed.splice(idx, 1); renderAll(); }
         };
         window.printData = () => console.log(JSON.stringify(programData, null, 2));
     </script>
