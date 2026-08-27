@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MU ↔ Tetr | Bifurcation Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f172a; --muted:#64748b; --bg:#f1f5f9; --card:#ffffff; --line:#e2e8f0;
+    --mu:#4f46e5; --mu-soft:#eef2ff; --tetr:#0d9488; --tetr-soft:#f0fdfa;
+    --warn:#d97706; --warn-soft:#fffbeb; --bad:#dc2626; --bad-soft:#fef2f2;
+    --good:#059669; --good-soft:#ecfdf5; --accent:#4f46e5;
+    --radius:14px; --shadow:0 1px 3px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.55}
+
+  nav.tabs{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:0 40px}
+  .tabs-inner{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:12px 0}
+  .tab-buttons{display:flex;gap:6px;overflow-x:auto;flex:1}
+  .tab-btn{white-space:nowrap;border:1px solid var(--line);background:#fff;color:#334155;font-family:inherit;font-size:13px;font-weight:600;padding:9px 16px;border-radius:999px;cursor:pointer;transition:.18s}
+  .tab-btn:hover{border-color:#c7d2fe;color:var(--accent)}
+  .tab-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .tab-btn .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--bad);margin-left:6px;vertical-align:1px}
+  .btn-print{flex-shrink:0;background:var(--ink);color:#fff;border:0;font-weight:700;font-size:12.5px;padding:10px 16px;border-radius:10px;cursor:pointer;box-shadow:var(--shadow)}
+  .btn-print:hover{background:#1e293b}
+
+  main{max-width:1240px;margin:22px auto 60px;padding:0 40px;position:relative;z-index:2}
+  section.panel{display:none}
+  section.panel.active{display:block;animation:fade .3s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin-bottom:20px}
+  .card h2{font-size:17px;font-weight:800;letter-spacing:-.01em;margin-bottom:4px}
+  .card h3{font-size:14px;font-weight:700;margin:18px 0 8px}
+  .card .src{font-size:11px;color:var(--muted);margin-bottom:14px}
+  .card .desc{color:#475569;font-size:13px;margin-bottom:14px;max-width:900px}
+
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .g4{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+  .g6{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;position:relative;overflow:hidden}
+  .kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
+  .kpi.mu::before{background:var(--mu)} .kpi.tetr::before{background:var(--tetr)}
+  .kpi.warn::before{background:var(--warn)} .kpi.bad::before{background:var(--bad)} .kpi.good::before{background:var(--good)}
+  .kpi .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+  .kpi .value{font-size:24px;font-weight:800;margin:6px 0 2px;letter-spacing:-.02em}
+  .kpi .foot{font-size:11.5px;color:var(--muted)}
+
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+  table{width:100%;border-collapse:collapse;font-size:12.8px;min-width:640px}
+  th{background:#f8fafc;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#475569;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+  tbody tr:hover{background:#fafbff}
+  tbody tr:last-child td{border-bottom:0}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  tr.total td{background:#f8fafc;font-weight:800;border-top:2px solid var(--line)}
+
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap}
+  .p-mu{background:var(--mu-soft);color:var(--mu)} .p-tetr{background:var(--tetr-soft);color:var(--tetr)}
+  .p-shared{background:#f5f3ff;color:#7c3aed} .p-warn{background:var(--warn-soft);color:var(--warn)}
+  .p-bad{background:var(--bad-soft);color:var(--bad)} .p-good{background:var(--good-soft);color:var(--good)}
+  .p-grey{background:#f1f5f9;color:#475569}
+  .bar{display:flex;height:26px;border-radius:8px;overflow:hidden;font-size:11px;font-weight:700;color:#fff}
+  .bar .seg{display:flex;align-items:center;justify-content:center;white-space:nowrap}
+  .bar .mu{background:var(--mu)} .bar .tetr{background:var(--tetr)}
+  .legend{display:flex;gap:16px;font-size:12px;color:#475569;margin-top:8px;flex-wrap:wrap}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+
+  .callout{border-radius:12px;padding:16px 18px;font-size:13px;border:1px solid;margin-bottom:16px}
+  .c-warn{background:var(--warn-soft);border-color:#fde68a;color:#92400e}
+  .c-bad{background:var(--bad-soft);border-color:#fecaca;color:#991b1b}
+  .c-good{background:var(--good-soft);border-color:#a7f3d0;color:#065f46}
+  .c-info{background:var(--mu-soft);border-color:#c7d2fe;color:#3730a3}
+  .callout b{display:block;margin-bottom:2px}
+
+  .timeline{position:relative;margin-left:8px;padding-left:26px;border-left:2px solid var(--line)}
+  .tl-item{position:relative;padding-bottom:22px}
+  .tl-item::before{content:"";position:absolute;left:-33px;top:3px;width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--accent)}
+  .tl-item.warn::before{border-color:var(--warn)} .tl-item.good::before{border-color:var(--good)}
+  .tl-date{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+  .tl-item h4{font-size:14px;margin:2px 0 3px}
+  .tl-item p{font-size:12.8px;color:#475569;max-width:860px}
+
+  .action{border:1px solid var(--line);border-left-width:5px;border-radius:12px;padding:16px 18px;background:#fff;box-shadow:var(--shadow);margin-bottom:12px}
+  .action.p1{border-left-color:var(--bad)} .action.p2{border-left-color:var(--warn)} .action.p3{border-left-color:var(--accent)}
+  .action h4{font-size:14px;margin-bottom:4px}
+  .action p{font-size:12.6px;color:#475569;margin-bottom:8px}
+  .action .meta{display:flex;gap:8px;flex-wrap:wrap}
+
+  .filter-box{margin-bottom:12px}
+  .filter-box input{font-family:inherit;font-size:13px;padding:9px 14px;border:1px solid var(--line);border-radius:10px;width:min(340px,100%);outline:none}
+  .filter-box input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+
+  footer{max-width:1240px;margin:0 auto;padding:0 40px 50px;color:var(--muted);font-size:11.5px}
+  footer .srcs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  footer .srcs span{background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 12px}
+
+  /* ================= AI CHATBOT ================= */
+  #chat-fab{position:fixed;right:26px;bottom:26px;z-index:120;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:0;font-size:25px;cursor:pointer;box-shadow:0 8px 28px rgba(79,70,229,.45);display:flex;align-items:center;justify-content:center;transition:.2s}
+  #chat-fab:hover{transform:scale(1.07)}
+  #chat-fab::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(79,70,229,.4);animation:pulse 2.2s infinite}
+  @keyframes pulse{0%{transform:scale(.9);opacity:.9}70%{transform:scale(1.25);opacity:0}100%{opacity:0}}
+  #chat-panel{position:fixed;right:26px;bottom:98px;z-index:121;width:380px;max-width:calc(100vw - 40px);height:540px;max-height:calc(100vh - 130px);background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 20px 60px rgba(15,23,42,.28);display:flex;flex-direction:column;overflow:hidden;opacity:0;pointer-events:none;transform:translateY(16px);transition:.25s}
+  #chat-panel.open{opacity:1;pointer-events:auto;transform:none}
+  .chat-head{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;padding:15px 18px;display:flex;align-items:center;gap:11px}
+  .chat-head .avatar{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+  .chat-head .ttl{font-weight:800;font-size:14px;line-height:1.2}
+  .chat-head .sub{font-size:11px;opacity:.85}
+  .chat-head .online{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4ade80;margin-right:5px}
+  #chat-msgs{flex:1;overflow-y:auto;padding:16px;background:#f8fafc;display:flex;flex-direction:column;gap:10px}
+  .msg{display:flex}
+  .msg.user{justify-content:flex-end}
+  .bubble{max-width:82%;padding:10px 13px;border-radius:14px;font-size:12.8px;line-height:1.5;white-space:pre-line;box-shadow:0 1px 2px rgba(15,23,42,.08)}
+  .msg.bot .bubble{background:#fff;border:1px solid var(--line);border-bottom-left-radius:4px;color:#1e293b}
+  .msg.user .bubble{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border-bottom-right-radius:4px}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;padding:0 16px 12px;background:#f8fafc}
+  .chip{background:#fff;border:1px solid #c7d2fe;color:#4f46e5;font-size:11.5px;font-weight:600;padding:7px 11px;border-radius:999px;cursor:pointer;transition:.15s}
+  .chip:hover{background:#eef2ff}
+  .chip-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;width:100%;margin-bottom:-2px}
+  .chat-input{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);background:#fff}
+  .chat-input input{flex:1;font-family:inherit;font-size:13px;padding:10px 14px;border:1px solid var(--line);border-radius:999px;outline:none}
+  .chat-input input:focus{border-color:var(--accent)}
+  .chat-input button{width:42px;height:42px;flex-shrink:0;border-radius:50%;border:0;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .typing{display:flex;gap:4px;padding:14px 16px}
+  .typing span{width:7px;height:7px;border-radius:50%;background:#94a3b8;animation:blink 1.2s infinite}
+  .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+
+  @media (max-width:720px){ nav.tabs,main,footer{padding-left:18px;padding-right:18px} #chat-panel{right:12px;left:12px;width:auto} #chat-fab{right:16px;bottom:16px} }
+  @media print{
+    nav.tabs,.btn-print,.filter-box,#chat-fab,#chat-panel{display:none!important}
+    section.panel{display:block!important;page-break-inside:avoid}
+    body{background:#fff} .card,.kpi,.action{box-shadow:none}
+  }
+</style>
+</head>
+<body>
+
+<nav class="tabs">
+  <div class="tabs-inner">
+    <div class="tab-buttons">
+      <button class="tab-btn active" data-target="overview">📊 Executive Overview</button>
+      <button class="tab-btn" data-target="systems">🖥 Systems Landscape</button>
+      <button class="tab-btn" data-target="spend">💳 Tech Spend</button>
+      <button class="tab-btn" data-target="lms">🎓 LMS Economics</button>
+      <button class="tab-btn" data-target="hardware">💻 Hardware Assets</button>
+      <button class="tab-btn" data-target="infra">🏢 Infrastructure</button>
+      <button class="tab-btn" data-target="timeline">🕒 Program Timeline</button>
+      <button class="tab-btn" data-target="actions">🎯 Action Items<span class="dot"></span></button>
+    </div>
+    <button class="btn-print" onclick="window.print()">⬇ Export / Print</button>
+  </div>
+</nav>
+
+<main>
+
+<!-- ================= TAB 1 · OVERVIEW ================= -->
+<section class="panel active" id="overview">
+  <div class="grid g6" style="margin-bottom:20px">
+    <div class="kpi"><div class="label">Monthly Shared Tech Burn</div><div class="value">$7,345 + ₹18K</div><div class="foot">USD/mo + INR/mo · Apple ₹10K billed yearly</div></div>
+    <div class="kpi warn"><div class="label">Fully-Loaded LMS Cost</div><div class="value">₹44.14L / mo</div><div class="foot">Sheet-1 · incl. 30 FTEs (₹37.5L) + infra</div></div>
+    <div class="kpi bad"><div class="label">Cross-Held Devices</div><div class="value">1,269</div><div class="foot">370 Tetr-assets @ MU + 899 MU-assets @ Tetr</div></div>
+    <div class="kpi tetr"><div class="label">Proposed Tetr Share</div><div class="value">40%</div><div class="foot">Flat-rate simplification · verified 17 Aug</div></div>
+    <div class="kpi"><div class="label">LMS Breakeven</div><div class="value">502 students</div><div class="foot">Fixed cost ₹38.23L/mo</div></div>
+    <div class="kpi good"><div class="label">Deadline · Interchange</div><div class="value">10 Sep</div><div class="foot">Laptops &amp; mobiles physical segregation</div></div>
+  </div>
+
+  <div class="callout c-info"><b>📜 Program origin &amp; scope expansion (from older email threads)</b>The bifurcation traces back to a <b>19 May 2026</b> discovery request to map shared systems (formal launch 26 Jun; firm 30 Jun deadline set 15 Jun). Early threads also surfaced <b>Dinero, Darwinbox, Punjab App</b> (migrating MU→Tetr) and <b>Startup Emirates</b> (security audit freezing account changes). See Systems &amp; Timeline tabs.</div>
+
+  <div class="callout c-info" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <span style="font-size:26px">🤖</span>
+    <div style="flex:1;min-width:220px"><b>New: AI Framework Assistant</b>Ask anything about cost splits, shared systems, hardware, LMS economics, the timeline, or action items. Use the floating button (bottom-right) or try an example below.</div>
+    <button class="chip" onclick="openChatWith('What is the proposed cost split between MU and Tetr?')">Try: “What is the proposed cost split?”</button>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h2>Program Objective</h2>
+      <p class="desc">Establish a clean, auditable demarcation between the two entities across four domains, so each P&amp;L reflects its true cost of operations:</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Domain</th><th>Status</th><th>Next step</th></tr></thead>
+        <tbody>
+          <tr><td><b>Software / Cloud / SaaS</b></td><td><span class="pill p-warn">Shared · costing ready</span></td><td>CFO sign-off on split ratio; monthly cross-charge</td></tr>
+          <tr><td><b>Hardware / Devices</b></td><td><span class="pill p-bad">Interchange in progress</span></td><td>Complete by 10 Sep; unblocked by Tetr invoices</td></tr>
+          <tr><td><b>Office Infrastructure</b></td><td><span class="pill p-shared">Partially separable</span></td><td>Unit-based allocation; vendor data for “No” items</td></tr>
+          <tr><td><b>Billing Entities</b></td><td><span class="pill p-bad">2 anomalies open</span></td><td>AGDM → Tetr; Shanti Informatics clarification</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="card">
+      <h2>Demarcation Snapshot — Today</h2>
+      <h3>✅ Cleanly segregated</h3>
+      <p class="desc" style="margin-bottom:8px">
+        <span class="pill p-tetr">Lease Line → Tetr</span>&nbsp;
+        <span class="pill p-mu">Crisp → MU only</span>&nbsp;
+        <span class="pill p-good">Rajat’s stack fully segregated (27 Jul)</span>&nbsp;
+        <span class="pill p-tetr">AGDM usage = Tetr-only (billing pending fix)</span>
+      </p>
+      <h3>⚠️ Still shared — needs cross-charge</h3>
+      <p class="desc" style="margin-bottom:8px">
+        <span class="pill p-shared">CoachLMS</span>&nbsp;<span class="pill p-shared">Career Coach</span>&nbsp;<span class="pill p-shared">Coach Resume</span>&nbsp;
+        <span class="pill p-shared">Wati · Twilio · Chatbotbuilder</span>&nbsp;<span class="pill p-shared">AWS · GCP · Openrouter · Claude AI</span>&nbsp;
+        <span class="pill p-shared">Firewall · AP licenses · Network switches</span>
+      </p>
+      <div class="callout c-warn" style="margin-top:12px;margin-bottom:0"><b>Decision required from CFO</b>
+      Two split proposals are on record: <b>70% MU / 30% Tetr</b> (Systems Landscape sheet, 26 Jun) and a flat <b>40% of total cost to Tetr</b> (Tarun Gupta, 3 Aug — “for simplification”, verified 17 Aug by Akash Sharma &amp; Tarun Gupta). Finance should ratify one and operationalize a monthly inter-company invoice.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Entity Identity Logic (used across all registers)</h2>
+    <div class="grid g3">
+      <div style="border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--mu-soft)">
+        <b style="color:var(--mu)">Masters’ Union (MU)</b>
+        <p style="font-size:12.5px;color:#475569;margin-top:6px">Email domain <code>@mastersunion.org</code> · numeric Emp IDs · models without “(T)” suffix · Crisp &amp; legacy MU contracts.</p>
+      </div>
+      <div style="border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--tetr-soft)">
+        <b style="color:var(--tetr)">Tetr College of Business</b>
+        <p style="font-size:12.5px;color:#475569;margin-top:6px">Email domain <code>@tetr.org</code> · Emp IDs prefixed <code>T-</code> · models tagged “(T)” · AGDM/Khalifa Fund (UAE) · Lease line.</p>
+      </div>
+      <div style="border:1px solid var(--line);border-radius:10px;padding:14px;background:#fffbeb">
+        <b style="color:var(--warn)">Shared / Pool buckets (need mapping)</b>
+        <p style="font-size:12.5px;color:#475569;margin-top:6px">Assignments to “Outgrow Team”, “Tower CDS”, “DLF Tower A/C” and interns — require an ownership ruling before final capitalization.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TAB 2 · SYSTEMS ================= -->
+<section class="panel" id="systems">
+  <div class="card">
+    <h2>IT Systems Landscape — Ownership, Usage &amp; Billing</h2>
+    <div class="src">Source: Systems_Landscape_Summary.xlsx · IT Systems Bifurcation email thread (Jun–Aug 2026) · Discovery thread (19–27 May 2026)</div>
+    <div class="filter-box"><input type="text" onkeyup="filterTable(this,'sysTable')" placeholder="🔍 Filter systems, owners, flags…"></div>
+    <div class="tbl-wrap"><table id="sysTable">
+      <thead><tr><th>System / Platform</th><th>Function Owner</th><th>Used By</th><th>Hosting</th><th>Billing Entity</th><th>Flag / Action</th></tr></thead>
+      <tbody>
+        <tr><td><b>CoachLMS</b> (incl. Student, Parent &amp; Admin apps)</td><td>Tarun Gupta</td><td><span class="pill p-shared">MU &amp; Tetr</span></td><td>AWS</td><td>MU (shared pool)</td><td><span class="pill p-warn">Cost split pending CFO approval</span></td></tr>
+        <tr><td><b>Career Coach</b> (placements vertical)</td><td>Tarun Gupta</td><td><span class="pill p-shared">MU &amp; Tetr</span></td><td>AWS</td><td>MU (shared pool)</td><td><span class="pill p-warn">Cost split pending CFO approval</span></td></tr>
+        <tr><td><b>Coach Resume</b> (AI-led resume builder)</td><td>Tarun Gupta</td><td><span class="pill p-shared">MU &amp; Tetr</span></td><td>AWS</td><td>MU (shared pool)</td><td><span class="pill p-warn">Cost split pending CFO approval</span></td></tr>
+        <tr><td><b>Wati · Twilio · Chatbotbuilder · Flow Builder</b></td><td>Tarun Gupta</td><td><span class="pill p-shared">MU &amp; Tetr</span></td><td>AWS</td><td>MU (shared pool)</td><td><span class="pill p-warn">Cost split pending CFO approval</span></td></tr>
+        <tr><td><b>AGDM / Khalifa Fund</b> (EdTech app, UAE market)</td><td>Naman Kareer</td><td><span class="pill p-tetr">Tetr only</span></td><td>AWS</td><td><b>Billed under MU</b></td><td><span class="pill p-bad">ANOMALY — reallocate to Tetr</span></td></tr>
+        <tr><td><b>Orbit</b></td><td>Rajat Puri</td><td><span class="pill p-shared">MU &amp; Tetr</span></td><td>AWS</td><td><b>Shanti Informatics</b> (incl. GST)</td><td><span class="pill p-bad">ANOMALY — clarify entity ownership</span></td></tr>
+        <tr><td><b>Mentor Union</b></td><td>Rajat Puri</td><td><span class="pill p-shared">MU &amp; Tetr</span></td><td>AWS</td><td><b>Shanti Informatics</b> (incl. GST)</td><td><span class="pill p-bad">ANOMALY — clarify entity ownership</span></td></tr>
+        <tr style="background:#fffbeb"><td><b>Dinero</b></td><td>Unassigned</td><td><span class="pill p-grey">Unconfirmed</span></td><td>Unconfirmed</td><td>Unconfirmed</td><td><span class="pill p-warn">Cited in discovery — status unconfirmed</span></td></tr>
+        <tr style="background:#fffbeb"><td><b>Darwinbox</b></td><td>Unassigned</td><td><span class="pill p-grey">Unconfirmed</span></td><td>Unconfirmed</td><td>Unconfirmed</td><td><span class="pill p-warn">Cited in discovery &amp; bifurcation — status unconfirmed</span></td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="grid g3" style="margin-top:18px">
+      <div class="callout c-good" style="margin:0"><b>✅ Rajat’s function — fully segregated</b>As of 27 Jul 2026: “All services have been segregated and are being used independently. No remaining shared services within my function.”</div>
+      <div class="callout c-warn" style="margin:0"><b>⚠️ Pending validation</b>Rajat flagged that <b>additional shared systems may exist</b>, pending internal validation. Finance should request the completed list before closing the software workstream.</div>
+      <div class="callout c-bad" style="margin:0"><b>⛔ Billing anomalies</b>1) Tetr-specific AGDM cloud+AI costs sit on MU’s books. 2) Orbit &amp; Mentor Union bypass both entities via Shanti Informatics — GST mapping unresolved.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Discovery-Phase Systems, Dependencies &amp; Migration</h2>
+    <div class="src">Source: 19–27 May &amp; 12–15 Jun 2026 email threads (pre-bifurcation discovery)</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Item</th><th>Pulled from emails</th><th>Status / Action</th></tr></thead>
+      <tbody>
+        <tr><td><b>Base configuration</b></td><td>19 May request: identify shared systems and clarify whether MU is the sole base for jointly used systems.</td><td><span class="pill p-warn">Needs consolidated answer / ruling</span></td></tr>
+        <tr><td><b>Dinero</b></td><td>Cited in 19 May discovery request as a shared platform.</td><td><span class="pill p-warn">Ownership / billing unconfirmed</span></td></tr>
+        <tr><td><b>Darwinbox</b></td><td>Cited 19 May &amp; 26 Jun as an example (HRMS).</td><td><span class="pill p-warn">Ownership / billing unconfirmed</span></td></tr>
+        <tr><td><b>Punjab App</b></td><td>15 Jun: will be moved under the TETR account; assets must migrate from MU to TETR in phases, with planned downtime.</td><td><span class="pill p-bad">Phased migration plan</span></td></tr>
+        <tr><td><b>Startup Emirates</b></td><td>15 Jun: external security audit in progress; account changes frozen until certification (critical for AGDM &amp; Khalifa Fund).</td><td><span class="pill p-grey">Change freeze until audit completes</span></td></tr>
+        <tr><td><b>TETR AWS account</b></td><td>15 Jun: approval received only the prior week.</td><td><span class="pill p-grey">Dependency for migration</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout c-info" style="margin-top:14px;margin-bottom:0"><b>💡 New stakeholders &amp; dependency</b>Rahul Kumar (VenturePact) is coordinating the Tetr-account migration; Chetan Verma cc’d. The TETR AWS account was approved only in early June 2026, and account changes are frozen until the Startup Emirates audit completes.</div>
+  </div>
+
+  <div class="card">
+    <h2>Proposed Cost-Allocation Structures</h2>
+    <p class="desc">Two proposals exist in the record. The 40% flat model is the latest (3 Aug) and its calculations were independently verified by Akash Sharma &amp; Tarun Gupta on 17 Aug.</p>
+    <h3>Option A — Landscape-sheet proposal (26 Jun)</h3>
+    <div class="bar"><div class="seg mu" style="width:70%">MU · 70%</div><div class="seg tetr" style="width:30%">Tetr · 30%</div></div>
+    <h3 style="margin-top:16px">Option B — Tarun’s simplification (3 Aug) <span class="pill p-good">Recommended by Engineering · Verified 17 Aug</span></h3>
+    <div class="bar"><div class="seg mu" style="width:60%">MU · 60%</div><div class="seg tetr" style="width:40%">Tetr · 40%</div></div>
+    <div class="legend"><span><i style="background:var(--mu)"></i>Masters’ Union share</span><span><i style="background:var(--tetr)"></i>Tetr share (billable via monthly inter-company invoice)</span></div>
+  </div>
+</section>
+
+<!-- ================= TAB 3 · TECH SPEND ================= -->
+<section class="panel" id="spend">
+  <div class="grid g4" style="margin-bottom:20px">
+    <div class="kpi mu"><div class="label">USD Monthly Total</div><div class="value">$7,345</div><div class="foot">Incl. $95 Crisp (MU-only)</div></div>
+    <div class="kpi tetr"><div class="label">INR Monthly Total</div><div class="value">₹18,000</div><div class="foot">Wati ₹8K + GCP ₹10K</div></div>
+    <div class="kpi"><div class="label">Annual Add-ons</div><div class="value">₹10,000</div><div class="foot">Apple Developer account (yearly)</div></div>
+    <div class="kpi good"><div class="label">Zero-Cost Tools</div><div class="value">8</div><div class="foot">Education/free plans (Figma, GitLab, Canva…)</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Consolidated SaaS / Cloud Spend — Tarun Gupta’s Portfolio</h2>
+    <div class="src">Source: Tarun - Mastersunion Payments - Sheet1.csv · Grand total per source: $7,345 + ₹28,000 (incl. yearly Apple)</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Vendor</th><th>Purpose</th><th>Entity Scope</th><th class="num">Amount</th><th>Currency</th><th>Frequency</th></tr></thead>
+      <tbody>
+        <tr><td><b>AWS</b></td><td>Infrastructure &amp; workflows</td><td><span class="pill p-shared">MU / Tetr</span></td><td class="num">5,000</td><td>USD</td><td>Monthly</td></tr>
+        <tr><td><b>Openrouter</b></td><td>AI bots — website, Instagram, WhatsApp</td><td><span class="pill p-shared">MU / Tetr</span></td><td class="num">2,000</td><td>USD</td><td>Monthly</td></tr>
+        <tr><td><b>Claude AI</b></td><td>Development &amp; workflows</td><td><span class="pill p-shared">MU / Tetr</span></td><td class="num">200</td><td>USD</td><td>Monthly</td></tr>
+        <tr><td><b>Twilio</b></td><td>SMS &amp; auth for students/parents</td><td><span class="pill p-shared">MU / Tetr</span></td><td class="num">50</td><td>USD</td><td>Monthly</td></tr>
+        <tr><td><b>Crisp</b></td><td>MU bot human-agent handling</td><td><span class="pill p-mu">MU only</span></td><td class="num">95</td><td>USD</td><td>Monthly</td></tr>
+        <tr><td><b>Wati</b></td><td>WhatsApp communication</td><td><span class="pill p-shared">MU / Tetr</span></td><td class="num">8,000</td><td>INR</td><td>Monthly</td></tr>
+        <tr><td><b>GCP</b></td><td>Location API &amp; misc services</td><td><span class="pill p-shared">MU / Tetr</span></td><td class="num">10,000</td><td>INR</td><td>Monthly</td></tr>
+        <tr><td><b>Apple Store</b></td><td>App Store developer account</td><td><span class="pill p-shared">MU / Tetr</span></td><td class="num">10,000</td><td>INR</td><td>Yearly</td></tr>
+        <tr><td>Mobin · Figma · GitLab · Canva · ClickUp · Gitbook · Sentry · Analytics/Clarity</td><td>UX, UI/UX design, version control, PM, docs, monitoring, analytics</td><td><span class="pill p-shared">MU / Tetr</span></td><td class="num">0</td><td>—</td><td>Free / education plans</td></tr>
+        <tr class="total"><td colspan="3">TOTAL RECURRING BURN</td><td class="num">$7,345 / mo</td><td colspan="2">+ ₹18,000 / mo (+ ₹10,000 / yr Apple)</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout c-info" style="margin-top:16px"><b>💡 Finance note</b>At the proposed 40% Tetr share, the monthly cross-charge ≈ <b>$2,938 + ₹7,200 to Tetr</b> (Crisp $95 excluded as MU-only). At 30%, ≈ $2,204 + ₹5,400. Recommend a fixed monthly inter-company debit note with an annual true-up.</div>
+  </div>
+</section>
+
+<!-- ================= TAB 4 · LMS ECONOMICS ================= -->
+<section class="panel" id="lms">
+  <div class="grid g4" style="margin-bottom:20px">
+    <div class="kpi"><div class="label">Total Monthly Cost (Primary)</div><div class="value">₹44.14L</div><div class="foot">Sheet-1 · ₹4,413,929 · FX ₹95.46/$</div></div>
+    <div class="kpi tetr"><div class="label">Lean Variant</div><div class="value">₹39.04L</div><div class="foot">Sheet-2 · ₹3,904,382 · reduced people &amp; GCP</div></div>
+    <div class="kpi warn"><div class="label">Pricing Fixed-Cost Basis</div><div class="value">₹38.23L</div><div class="foot">₹3,822,784.30 / mo</div></div>
+    <div class="kpi bad"><div class="label">Breakeven Volume</div><div class="value">502 students</div><div class="foot">Below this, the platform runs at a loss</div></div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h2>Primary Cost Build-Up (Sheet 1)</h2>
+      <div class="src">“The cost above includes everything from web → mobile → development → deployment → maintenance”</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Component</th><th class="num">USD</th><th class="num">INR / month</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>AWS — servers</td><td class="num">6,000</td><td class="num">572,784</td><td><span class="pill p-grey">Infra</span></td></tr>
+          <tr><td>GCP — Google services</td><td class="num">250</td><td class="num">23,866</td><td><span class="pill p-grey">Infra</span></td></tr>
+          <tr><td>OpenAI</td><td class="num">200</td><td class="num">19,093</td><td><span class="pill p-grey">AI</span></td></tr>
+          <tr><td>Wati — WhatsApp</td><td class="num">150</td><td class="num">14,320</td><td><span class="pill p-grey">Comms</span></td></tr>
+          <tr><td>Filestack — storage</td><td class="num">150</td><td class="num">14,320</td><td><span class="pill p-grey">Infra</span></td></tr>
+          <tr><td>Twilio — SMS</td><td class="num">100</td><td class="num">9,546</td><td><span class="pill p-grey">Comms</span></td></tr>
+          <tr><td>Apple account</td><td class="num">—</td><td class="num">10,000 <small>(yr)</small></td><td><span class="pill p-grey">Licence</span></td></tr>
+          <tr><td>Other tools (Outgrow, CBB, Flowbuilder)</td><td class="num">0</td><td class="num">0</td><td><span class="pill p-grey">Free</span></td></tr>
+          <tr><td><b>People — 30 FTEs @ ₹1.25L</b></td><td class="num">—</td><td class="num"><b>3,750,000</b></td><td><span class="pill p-warn">~85% of cost</span></td></tr>
+          <tr class="total"><td>TOTAL</td><td class="num"></td><td class="num">≈ ₹4,413,929</td><td></td></tr>
+        </tbody>
+      </table></div>
+      <p class="desc" style="margin-top:10px"><b>Lean variant (Sheet 2):</b> GCP $0, AI $150, people @ ₹1.08L → ₹32.5L/mo → <b>₹39.04L/mo total</b>; “Mobile App can be covered with 1 Year Contract”.</p>
+    </div>
+
+    <div class="card">
+      <h2>Per-User Economics</h2>
+      <div class="src">Current served base: 5,000 Coach students (MU + Tetr) + 1,500 LMS team = 6,500 users</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th class="num">Users</th><th class="num">Cost / user / mo</th><th class="num">+50% margin price</th></tr></thead>
+        <tbody>
+          <tr><td class="num">2,500</td><td class="num">₹1,766</td><td class="num">₹2,648</td></tr>
+          <tr style="background:var(--mu-soft)"><td class="num"><b>6,500 (current)</b></td><td class="num"><b>₹679</b></td><td class="num"><b>₹1,019</b></td></tr>
+          <tr><td class="num">10,000</td><td class="num">₹441</td><td class="num">₹662</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout c-info" style="margin-top:14px"><b>💡 Charging model options for the CFO</b>
+      ① Flat 40% of total cost (simple, proposed by Engg) · ② Per-seat ₹679–₹1,019 × actual Tetr users (accurate, needs monthly user census) · ③ Hybrid: fixed infra split + variable per-seat AI/comms.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Pricing &amp; Margin Simulations (Verified 17 Aug 2026)</h2>
+    <div class="grid g2">
+      <div>
+        <h3>Full suite — Coach LMS + Coach Resume + Career Coach</h3>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th class="num">Students</th><th class="num">Breakeven ₹/user</th><th class="num">Margin</th><th class="num">Fee ₹/user/mo</th><th class="num">Fee $</th><th class="num">Monthly revenue</th></tr></thead>
+          <tbody>
+            <tr><td class="num">500</td><td class="num">7,646</td><td class="num">1.2×</td><td class="num">9,175</td><td class="num">96.11</td><td class="num">₹45.9L</td></tr>
+            <tr><td class="num">1,000</td><td class="num">3,823</td><td class="num">1.5×</td><td class="num">5,734</td><td class="num">60.07</td><td class="num">₹57.3L</td></tr>
+            <tr><td class="num">2,500</td><td class="num">1,529</td><td class="num">1.7×</td><td class="num">2,599</td><td class="num">27.23</td><td class="num">₹65.0L</td></tr>
+            <tr><td class="num">5,000</td><td class="num">765</td><td class="num">1.7×</td><td class="num">1,300</td><td class="num">13.62</td><td class="num">₹65.0L</td></tr>
+            <tr><td class="num">7,500</td><td class="num">510</td><td class="num">2.2×</td><td class="num">1,121</td><td class="num">11.75</td><td class="num">₹84.1L</td></tr>
+            <tr><td class="num">12,500</td><td class="num">306</td><td class="num">2.7×</td><td class="num">826</td><td class="num">8.65</td><td class="num">₹1.03Cr</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div>
+        <h3>Career Coach + Coach Resume only</h3>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th class="num">Students</th><th class="num">Breakeven ₹/user</th><th class="num">Margin</th><th class="num">Fee ₹/user/mo</th><th class="num">Fee $</th><th class="num">Monthly revenue</th></tr></thead>
+          <tbody>
+            <tr><td class="num">500</td><td class="num">3,823</td><td class="num">1.2×</td><td class="num">4,587</td><td class="num">48.05</td><td class="num">₹22.9L</td></tr>
+            <tr><td class="num">1,000</td><td class="num">1,911</td><td class="num">1.5×</td><td class="num">2,867</td><td class="num">30.03</td><td class="num">₹28.7L</td></tr>
+            <tr><td class="num">2,500</td><td class="num">765</td><td class="num">1.7×</td><td class="num">1,300</td><td class="num">13.62</td><td class="num">₹32.5L</td></tr>
+            <tr><td class="num">7,500</td><td class="num">255</td><td class="num">2.2×</td><td class="num">561</td><td class="num">5.87</td><td class="num">₹42.1L</td></tr>
+            <tr><td class="num">12,500</td><td class="num">153</td><td class="num">2.7×</td><td class="num">413</td><td class="num">4.32</td><td class="num">₹51.6L</td></tr>
+          </tbody>
+        </table></div>
+        <p class="desc" style="margin-top:8px"><b>Note:</b> AI credits are exclusive of the above pricing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TAB 5 · HARDWARE ================= -->
+<section class="panel" id="hardware">
+  <div class="grid g4" style="margin-bottom:20px">
+    <div class="kpi bad"><div class="label">Tetr assets held by MU staff</div><div class="value">370</div><div class="foot">“(T)”-tagged devices to return/swap</div></div>
+    <div class="kpi warn"><div class="label">MU assets held by Tetr staff</div><div class="value">899</div><div class="foot">As per asset-register pivot</div></div>
+    <div class="kpi"><div class="label">Total cross-held</div><div class="value">1,269</div><div class="foot">Requiring physical interchange</div></div>
+    <div class="kpi good"><div class="label">Interchange deadline</div><div class="value">10 Sep</div><div class="foot">Laptops &amp; mobiles — Harindra Yadav</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Cross-Held Asset Position — Why the Interchange Exists</h2>
+    <div class="src">Source: MU-TETR List1.xlsx (Orbit asset register + pivot sheets) · Commons Expense tracker</div>
+    <p class="desc">The register shows a two-way entanglement: Tetr-purchased devices (identified by the <b>“(T)” model suffix</b> and <code>T-</code> employee IDs) currently sit with MU employees, while MU-purchased devices sit with Tetr employees. Physical interchange of laptops and mobiles is underway and must close by <b>10 September 2026</b>.</p>
+    <div class="grid g2">
+      <div>
+        <h3>Tetr-owned devices with MU employees (370)</h3>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Model</th><th class="num">Units</th></tr></thead>
+          <tbody>
+            <tr><td>Lenovo Thinkpad E-14 (T)</td><td class="num">291</td></tr>
+            <tr><td>Lenovo Thinkbook-14 (T)</td><td class="num">27</td></tr>
+            <tr><td>Apple Macbook M4 (T)</td><td class="num">16</td></tr>
+            <tr><td>HP Omnibook 3-14 (T)</td><td class="num">13</td></tr>
+            <tr><td>Apple Macbook M1 (T)</td><td class="num">9</td></tr>
+            <tr><td>Lenovo Thinkpad L-14 (T)</td><td class="num">8</td></tr>
+            <tr><td>Lenovo Thinkpad E-14/i3 (T)</td><td class="num">3</td></tr>
+            <tr><td>Macbook Pro M4 (T) · Pro M5 (T) · Omnibook 7 (T)</td><td class="num">1 each</td></tr>
+            <tr class="total"><td>Total</td><td class="num">370</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div>
+        <h3>MU-owned devices with Tetr employees (899) — top models</h3>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Model</th><th class="num">Units</th></tr></thead>
+          <tbody>
+            <tr><td>Lenovo Thinkpad E-14</td><td class="num">367</td></tr>
+            <tr><td>Lenovo Thinkbook-14</td><td class="num">136</td></tr>
+            <tr><td>Lenovo Ideapad 3</td><td class="num">113</td></tr>
+            <tr><td>Dell VOSTRO 14</td><td class="num">48</td></tr>
+            <tr><td>Apple Macbook M1</td><td class="num">45</td></tr>
+            <tr><td>HP 240 G8</td><td class="num">35</td></tr>
+            <tr><td>Dell Latitude 3420</td><td class="num">34</td></tr>
+            <tr><td>Apple Macbook M4</td><td class="num">27</td></tr>
+            <tr><td>ASUS X415 EA</td><td class="num">16</td></tr>
+            <tr><td>Lenovo LOQ 15ARP9</td><td class="num">14</td></tr>
+            <tr><td>HP Pavilion x360</td><td class="num">13</td></tr>
+            <tr><td>Apple Macbook Pro M5</td><td class="num">8</td></tr>
+            <tr><td>Others (20 models)</td><td class="num">43</td></tr>
+            <tr class="total"><td>Total</td><td class="num">899</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+    <div class="callout c-bad" style="margin-top:16px;margin-bottom:0"><b>⛔ Active blocker (open since 30 Jul)</b>Harindra’s team cannot complete ownership tagging because <b>Tetr Finance has not shared laptop purchase invoices</b>. Escalation recommended — this directly threatens the 10 Sep deadline.</div>
+  </div>
+
+  <div class="card">
+    <h2>Register Hygiene Observations</h2>
+    <div class="grid g3">
+      <div class="callout c-warn" style="margin:0"><b>⚠️ Leaver assets</b>Multiple devices remain “assigned” to <b>Resigned / Terminated</b> employees. Recommend a recovery sweep before capitalization.</div>
+      <div class="callout c-warn" style="margin:0"><b>⚠️ Lost / bad-condition stock</b>A material number of rows are marked <i>lost</i> or <i>bad</i> — insurance/write-off treatment needed per entity.</div>
+      <div class="callout c-info" style="margin:0"><b>ℹ️ Pool assignments</b>Devices assigned to “Outgrow Team”, “Tower CDS”, “DLF Tower A/C” need an entity ruling (shared-service vs. single entity).</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TAB 6 · INFRASTRUCTURE ================= -->
+<section class="panel" id="infra">
+  <div class="card">
+    <h2>Office &amp; Network Infrastructure — Commons Expense Register</h2>
+    <div class="src">Source: Commons Expense MU &amp; TETR.xlsx · Tracking email thread (Karan / Sourabh / Harindra)</div>
+    <p class="desc">Rules agreed on 30 Jul 2026: <b>“Yes” items</b> → physically separate inventory &amp; tag by purchase entity; all <b>new purchases</b> entity-specific; existing stock tagged per purchase; <b>“No” items</b> → vendor name + purchase date to Finance for cost extraction.</p>
+    <div class="filter-box"><input type="text" onkeyup="filterTable(this,'infraTable')" placeholder="🔍 Filter items…"></div>
+    <div class="tbl-wrap"><table id="infraTable">
+      <thead><tr><th>Item</th><th>Separable?</th><th>Paid By</th><th>Period</th><th class="num">Cost (₹)</th><th class="num">MU Units</th><th class="num">Tetr Units</th><th>Status / Remark</th></tr></thead>
+      <tbody>
+        <tr><td><b>Lease Line</b></td><td><span class="pill p-good">Yes</span></td><td><span class="pill p-tetr">TETR</span></td><td>Monthly</td><td class="num">123,000 + 5,000</td><td class="num">—</td><td class="num">—</td><td><span class="pill p-good">✅ Segregation completed</span></td></tr>
+        <tr><td>Wifi / Access Points</td><td><span class="pill p-good">Yes</span></td><td><span class="pill p-mu">MU</span></td><td>One-time</td><td class="num">1,306,200</td><td class="num">15</td><td class="num">6</td><td>Allocate on unit basis</td></tr>
+        <tr><td>AP Licenses</td><td><span class="pill p-bad">No</span></td><td><span class="pill p-mu">MU</span></td><td>3 years</td><td class="num">241,553</td><td class="num" colspan="2">shared</td><td>Vendor details to Finance</td></tr>
+        <tr><td>CCTV Cameras</td><td><span class="pill p-good">Yes</span></td><td><span class="pill p-mu">MU</span></td><td>One-time</td><td class="num">421,000</td><td class="num">4</td><td class="num">12</td><td>Estimated split</td></tr>
+        <tr><td>Firewall</td><td><span class="pill p-bad">No</span></td><td><span class="pill p-mu">MU</span></td><td>One-time</td><td class="num">380,000</td><td class="num" colspan="2">shared</td><td>Vendor details to Finance</td></tr>
+        <tr><td>Firewall License</td><td><span class="pill p-bad">No</span></td><td><span class="pill p-mu">MU</span></td><td>3 years</td><td class="num">511,553</td><td class="num" colspan="2">shared</td><td>Vendor details to Finance</td></tr>
+        <tr><td>Firewall — Capital Bldg 10th Floor</td><td><span class="pill p-bad">No</span></td><td><span class="pill p-mu">MU</span></td><td>One-time</td><td class="num">840,000</td><td class="num" colspan="2">shared</td><td>—</td></tr>
+        <tr><td><b>Laptops</b></td><td><span class="pill p-good">Yes</span></td><td><span class="pill p-shared">MU + Tetr</span></td><td>One-time / rental</td><td class="num">—</td><td class="num" colspan="2">see register</td><td><span class="pill p-warn">Interchange by 10 Sep</span></td></tr>
+        <tr><td><b>Mobiles</b></td><td><span class="pill p-good">Yes</span></td><td><span class="pill p-shared">MU + Tetr</span></td><td>One-time</td><td class="num">1,260,000</td><td class="num">—</td><td class="num">105</td><td><span class="pill p-warn">Interchange by 10 Sep</span></td></tr>
+        <tr><td>iPads</td><td><span class="pill p-good">Yes</span></td><td><span class="pill p-shared">MU + Tetr</span></td><td>One-time</td><td class="num">—</td><td class="num" colspan="2">—</td><td>—</td></tr>
+        <tr><td>Server</td><td><span class="pill p-good">Yes</span></td><td><span class="pill p-mu">MU</span></td><td>One-time</td><td class="num">600,620</td><td class="num">—</td><td class="num">Tetr uses</td><td>Usage-based charge candidate</td></tr>
+        <tr><td>Network Switches</td><td><span class="pill p-good">Yes</span></td><td><span class="pill p-mu">MU</span></td><td>One-time</td><td class="num">1,240,000</td><td class="num">3</td><td class="num">2</td><td>Allocate on unit basis</td></tr>
+        <tr><td>Network Switch Licenses</td><td><span class="pill p-bad">No</span></td><td><span class="pill p-mu">MU</span></td><td>3 years</td><td class="num">52,000 + 22,601</td><td class="num" colspan="2">shared</td><td>Vendor details to Finance</td></tr>
+        <tr><td>Monitors</td><td><span class="pill p-good">Yes</span></td><td><span class="pill p-mu">MU</span></td><td>One-time</td><td class="num">220,000</td><td class="num">—</td><td class="num">11</td><td>Allocate to Tetr</td></tr>
+        <tr><td>Mouse</td><td><span class="pill p-good">Yes</span></td><td><span class="pill p-mu">MU</span></td><td>One-time</td><td class="num">110,000</td><td class="num">131</td><td class="num">37</td><td>107 units available</td></tr>
+        <tr><td>SIMs</td><td><span class="pill p-good">Yes</span></td><td><span class="pill p-mu">MU</span></td><td>Monthly</td><td class="num">—</td><td class="num" colspan="2">—</td><td>—</td></tr>
+        <tr><td>Portable Hard-disks</td><td><span class="pill p-good">Yes</span></td><td><span class="pill p-grey">Unknown</span></td><td>One-time</td><td class="num">—</td><td class="num">—</td><td class="num">9</td><td><span class="pill p-warn">Purchase entity unconfirmed</span></td></tr>
+        <tr><td>CPU / Desktops</td><td><span class="pill p-good">Yes</span></td><td><span class="pill p-mu">MU</span></td><td>One-time</td><td class="num">—</td><td class="num" colspan="2">—</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+    <div class="legend" style="margin-top:12px">
+      <span><i style="background:var(--good)"></i>Separable — physically split &amp; tag</span>
+      <span><i style="background:var(--bad)"></i>Not separable — Finance extracts cost via vendor + purchase date</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TAB 7 · TIMELINE ================= -->
+<section class="panel" id="timeline">
+  <div class="card">
+    <h2>Program Timeline — From the Email Record</h2>
+    <div class="src">Sources: Discovery thread (19–27 May) · Segregation follow-up (12–15 Jun) · Bifurcation thread (26 Jun–19 Aug) · Inventory thread (30 Jul–11 Aug)</div>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-date">19 May 2026</div><h4>Discovery request — true program origin</h4><p>Karan (writing for Ojasvi’s team) requests a map of shared systems across MU &amp; Tetr — citing <b>Orbit, Dinero, Mentor Union, Darwinbox and LMS</b> — and asks whether MU is the sole base for jointly-used platforms. Follow-ups sent 20–22 May.</p></div>
+      <div class="tl-item warn"><div class="tl-date">22 May 2026</div><h4>Rajat: Orbit &amp; Mentor Union → Shanti Informatics</h4><p>Rajat confirms Orbit and Mentor Union are shared across both entities, hosted on AWS accounts <b>billed to Shanti Informatics</b> (GST also under Shanti Informatics). Additional systems pending internal validation.</p></div>
+      <div class="tl-item warn"><div class="tl-date">27 May 2026</div><h4>Naman: AGDM / Khalifa Fund billed under MU</h4><p>Naman confirms the team is working with TETR on the AGDM / Khalifa Fund project (entrepreneurship-focused EdTech app for the UAE market); its Cloud &amp; AI infrastructure costs are currently <b>billed under MU</b>.</p></div>
+      <div class="tl-item"><div class="tl-date">12 Jun 2026</div><h4>Segregation follow-up</h4><p>Karan follows up with Naman based on a 2 Jun WhatsApp commitment that the Tetr/MU segregation would be completed by 12 Jun EOD.</p></div>
+      <div class="tl-item warn"><div class="tl-date">15 Jun 2026</div><h4>Dependencies surface; firm 30 Jun deadline set</h4><p>Naman: TETR account approved only the prior week; <b>Startup Emirates</b> external security audit in progress (account changes frozen to protect AGDM/Khalifa Fund certification); <b>Punjab App</b> to migrate MU→Tetr in phases (Rahul Kumar to coordinate). Karan rules: move only TETR-specific work to the Tetr entity, complete by <b>30 June — this timeline is firm</b>; any other movement needs internal discussion first.</p></div>
+      <div class="tl-item"><div class="tl-date">26 Jun 2026</div><h4>Bifurcation formally launched — deadline 30 Jun</h4><p>Karan writes to Rajat, Tarun &amp; Naman (cc: Ojasvi): IT systems bifurcation (e.g. AWS, Darwinbox, Mentor Union, CoachLMS — which entity gets billed?). Landscape Google-Sheet shared for live updates.</p></div>
+      <div class="tl-item"><div class="tl-date">27 Jul 2026</div><h4>Costing requested; Rajat’s stack confirmed 100% segregated</h4><p>Finance asks Tarun &amp; Rajat for tentative costing of any remaining MU services used by Tetr. Rajat confirms: all services in his function segregated and used independently, none shared.</p></div>
+      <div class="tl-item warn"><div class="tl-date">30 Jul 2026</div><h4>Hardware &amp; inventory segregation track opened</h4><p>Karan shares the Commons Expense sheet with Harindra &amp; Sourabh. Rules: separate “Yes” items by entity; new purchases entity-specific; existing stock tagged per purchase; “No” items need vendor + purchase date. Sourabh flags that Harindra needs <b>Tetr laptop invoices from Tetr Finance</b>.</p></div>
+      <div class="tl-item"><div class="tl-date">03 Aug 2026</div><h4>Tarun submits costing simulations — proposes flat 40% to Tetr</h4><p>Two simulation sheets shared; “we can bill Tetr on 40% of the total cost for simplification.” Ojasvi schedules a 30-min alignment call (3:30 PM).</p></div>
+      <div class="tl-item"><div class="tl-date">04–05 Aug 2026</div><h4>Alignment call &amp; hardware meeting</h4><p>30-min Tarun ↔ Ojasvi call on IT Systems Bifurcation (referenced by Karan as occurring Wednesday, 5 Aug). Hardware meeting with Harindra held Tuesday, 4 Aug.</p></div>
+      <div class="tl-item"><div class="tl-date">06 Aug 2026</div><h4>Hardware meeting follow-up</h4><p>Karan thanks Harindra for the Tuesday (4th) meeting; requests progress update and the Google Sheet link.</p></div>
+      <div class="tl-item"><div class="tl-date">10 Aug 2026</div><h4>Independent verification commissioned</h4><p>Tarun: “+Akash is working on verifying the calculations.” Karan also requests Harindra treat the inventory matter as a priority.</p></div>
+      <div class="tl-item"><div class="tl-date">11 Aug 2026</div><h4>Live hardware tracking sheet published</h4><p>Harindra shares the Google-Sheet tracker for asset segregation and invites queries.</p></div>
+      <div class="tl-item"><div class="tl-date">13 Aug 2026</div><h4>Verification follow-up</h4><p>Karan follows up with Akash on the pending verification.</p></div>
+      <div class="tl-item good"><div class="tl-date">17 Aug 2026</div><h4>✅ Costing verified &amp; released to Finance</h4><p>Tarun Gupta: “Akash and I verified, the calculations look fine from our side, you can use them per your requirements.” → Basis for the CFO’s cross-charge decision.</p></div>
+      <div class="tl-item good"><div class="tl-date">19 Aug 2026</div><h4>Acknowledgment</h4><p>Karan: “Noted, Tarun.” Costing formally accepted for Finance use.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TAB 8 · ACTIONS ================= -->
+<section class="panel" id="actions">
+  <div class="callout c-bad"><b>⚠️ Program risks at a glance</b>Cost-split ratio unratified · Tetr invoices still pending (blocker since 30 Jul) · 10 Sep interchange deadline approaching · 2 billing anomalies distorting both P&amp;Ls · Punjab App migration &amp; Startup Emirates audit pending.</div>
+
+  <div class="action p1">
+    <h4>1 · Ratify the shared-tech cost split &amp; start monthly cross-charging</h4>
+    <p>Choose between 70/30 (landscape sheet) and flat 40% to Tetr (latest, verified). Operationalize as a monthly inter-company debit note covering the $7,345 + ₹18,000 pool + LMS per-user charges.</p>
+    <div class="meta"><span class="pill p-mu">Owner: CFO</span><span class="pill p-grey">Input: Tarun / Akash verified sheets</span><span class="pill p-bad">Decision pending</span></div>
+  </div>
+  <div class="action p1">
+    <h4>2 · Unblock asset tagging — obtain Tetr laptop purchase invoices</h4>
+    <p>Harindra’s team cannot complete ownership assignment without historical Tetr invoices. This has been open since 30 Jul and directly threatens the 10 Sep interchange deadline.</p>
+    <div class="meta"><span class="pill p-tetr">Owner: Tetr Finance</span><span class="pill p-grey">Support: Harindra Yadav</span><span class="pill p-bad">BLOCKER · due before 10 Sep</span></div>
+  </div>
+  <div class="action p1">
+    <h4>3 · Fix billing anomaly — AGDM / Khalifa Fund</h4>
+    <p>Tetr-specific (UAE) EdTech initiative; cloud &amp; AI infra currently billed under MU (confirmed since 27 May). Reallocate all historical and recurring costs to Tetr — after the Startup Emirates audit clears.</p>
+    <div class="meta"><span class="pill p-mu">Owner: Naman Kareer + Finance</span><span class="pill p-bad">Anomaly open</span></div>
+  </div>
+  <div class="action p2">
+    <h4>4 · Resolve Shanti Informatics billing for Orbit &amp; Mentor Union</h4>
+    <p>Both shared platforms (incl. GST) bill to Shanti Informatics rather than MU or Tetr (confirmed since 22 May). Clarify the entity relationship and route costs to the correct cost centers.</p>
+    <div class="meta"><span class="pill p-mu">Owner: Rajat Puri + Finance</span><span class="pill p-warn">Anomaly open</span></div>
+  </div>
+  <div class="action p2">
+    <h4>5 · Complete laptop &amp; mobile interchange</h4>
+    <p>Swap the 370 Tetr-held-by-MU and 899 MU-held-by-Tetr devices so each entity’s register matches physical possession. Recover assets from resigned/terminated users in the same sweep.</p>
+    <div class="meta"><span class="pill p-mu">Owner: Harindra Yadav / Sourabh Chanchal</span><span class="pill p-bad">Deadline: 10 Sep 2026</span></div>
+  </div>
+  <div class="action p2">
+    <h4>6 · Supply vendor + purchase-date for non-separable infra</h4>
+    <p>For all “No” items (firewalls, AP/switch licenses), provide vendor name and purchase date so Finance can extract and allocate costs.</p>
+    <div class="meta"><span class="pill p-mu">Owner: Harindra Yadav</span><span class="pill p-warn">Open</span></div>
+  </div>
+  <div class="action p2">
+    <h4>7 · Track Punjab App migration (MU → Tetr)</h4>
+    <p>Approved to move under the TETR account; migrate assets in phases with planned downtime and stakeholder communication. Coordinate with Rahul Kumar (VenturePact).</p>
+    <div class="meta"><span class="pill p-mu">Owner: Naman + Rahul Kumar</span><span class="pill p-warn">Phased migration</span></div>
+  </div>
+  <div class="action p3">
+    <h4>8 · Confirm Startup Emirates audit completion</h4>
+    <p>Account changes are frozen until the external security audit wraps up — certification is critical for AGDM &amp; Khalifa Fund. Schedule the AGDM billing reallocation immediately after.</p>
+    <div class="meta"><span class="pill p-mu">Owner: Naman + Finance</span><span class="pill p-grey">Dependency</span></div>
+  </div>
+  <div class="action p3">
+    <h4>9 · Validate 30 Jun TETR-specific migration completion</h4>
+    <p>Karan’s 15 Jun instruction: only TETR-specific work moves to TETR, and completion by 30 June is firm. Confirm completion status; if incomplete, escalate and remediate.</p>
+    <div class="meta"><span class="pill p-mu">Owner: Naman + Finance</span><span class="pill p-grey">Post-deadline validation</span></div>
+  </div>
+  <div class="action p3">
+    <h4>10 · Confirm base-configuration ruling for shared systems</h4>
+    <p>Close the 19 May discovery request: obtain a consolidated list of shared systems and confirm whether MU is the sole base for jointly used systems (Orbit, Mentor Union, Dinero, Darwinbox, LMS).</p>
+    <div class="meta"><span class="pill p-mu">Owner: Karan + function heads</span><span class="pill p-grey">Open</span></div>
+  </div>
+  <div class="action p3">
+    <h4>11 · Confirm Dinero &amp; Darwinbox ownership / billing</h4>
+    <p>Both were cited in discovery (and Darwinbox again on 26 Jun) but are not yet fully covered in the consolidated landscape. Confirm user entity, billing entity, and whether any cross-charge is required.</p>
+    <div class="meta"><span class="pill p-mu">Owner: Function heads + Finance</span><span class="pill p-grey">Open</span></div>
+  </div>
+  <div class="action p3">
+    <h4>12 · Confirm the remaining shared-systems list</h4>
+    <p>Rajat indicated additional shared systems may exist pending internal validation. Obtain the final list to close the software workstream.</p>
+    <div class="meta"><span class="pill p-mu">Owner: Rajat Puri</span><span class="pill p-grey">Open</span></div>
+  </div>
+  <div class="action p3">
+    <h4>13 · Enforce entity-tagged procurement going forward</h4>
+    <p>All new IT purchases must carry an entity tag (MU / Tetr) at the PO stage — as agreed 30 Jul. Add a mandatory cost-center field in the procurement workflow.</p>
+    <div class="meta"><span class="pill p-mu">Owner: Finance + Procurement</span><span class="pill p-good">Policy — implement</span></div>
+  </div>
+  <div class="action p3">
+    <h4>14 · Rule on shared pools &amp; write-offs</h4>
+    <p>Decide entity ownership of “Outgrow Team / Tower CDS / DLF Tower” device pools, and approve write-offs for lost/bad stock per entity before re-capitalization.</p>
+    <div class="meta"><span class="pill p-mu">Owner: CFO</span><span class="pill p-grey">Ruling needed</span></div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <b>Compiled from:</b>
+  <div class="srcs">
+    <span>Systems_Landscape_Summary.xlsx</span>
+    <span>Commons Expense MU &amp; TETR.xlsx</span>
+    <span>LMS Costing - Tarun Gupta.xlsx</span>
+    <span>Tarun - Mastersunion Payments.csv</span>
+    <span>MU-TETR List1.xlsx</span>
+    <span>IT Systems Bifurcation thread (PDF)</span>
+    <span>Inventory &amp; Procurement thread (PDF)</span>
+    <span>Shared Systems &amp; Base Configuration thread (19 May, PDF)</span>
+    <span>Segregation of Tetr &amp; MU thread (15 Jun, PDF)</span>
+  </div>
+  <p style="margin-top:10px">All figures as reported in source files; FX ₹95.46/USD where applied by source.</p>
+</footer>
+
+<!-- ================= AI CHATBOT ================= -->
+<button id="chat-fab" onclick="toggleChat()" title="AI Framework Assistant">🤖</button>
+<div id="chat-panel" role="dialog" aria-label="AI Framework Assistant">
+  <div class="chat-head">
+    <div class="avatar">🤖</div>
+    <div>
+      <div class="ttl">Bifurcation Framework Assistant</div>
+      <div class="sub"><span class="online"></span>Answers from your MU ↔ Tetr knowledge base</div>
+    </div>
+  </div>
+  <div id="chat-msgs"></div>
+  <div class="chips" id="chat-chips">
+    <div class="chip-label">Example questions</div>
+    <button class="chip" data-q="What is the proposed cost split between MU and Tetr?">Cost split?</button>
+    <button class="chip" data-q="How many devices need to be interchanged by 10 September?">Device interchange?</button>
+    <button class="chip" data-q="What are the open billing anomalies?">Billing anomalies?</button>
+    <button class="chip" data-q="What came out of the older discovery emails?">Discovery emails?</button>
+  </div>
+  <form class="chat-input" id="chat-form" autocomplete="off">
+    <input type="text" id="chat-input" placeholder="Ask about the framework…" aria-label="Your question">
+    <button type="submit" title="Send">➤</button>
+  </form>
+</div>
+
+<script>
+  // ---------- Tabs ----------
+  const btns = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('section.panel');
+  btns.forEach(b => b.addEventListener('click', () => {
+    btns.forEach(x => x.classList.remove('active'));
+    panels.forEach(p => p.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById(b.dataset.target).classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }));
+
+  // ---------- Table filter ----------
+  function filterTable(input, tableId){
+    const q = input.value.toLowerCase();
+    document.querySelectorAll('#' + tableId + ' tbody tr').forEach(tr => {
+      tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+
+  // ---------- AI Assistant knowledge base ----------
+  const INTENTS = [
+    { name:'cost_split',
+      keywords:['split','ratio','40%','40 percent','70/30','70-30','70 30','allocation','cross-charge','cross charge','bill tetr','charge tetr','cost sharing','cost-sharing','cost split','billing split','percentage','divide the cost','how much to tetr'],
+      response:'📊 Cost-Split Proposals\nTwo options are on record for shared tech:\n\n• Option A (26 Jun — Landscape sheet): 70% MU / 30% Tetr\n• Option B (3 Aug — Tarun Gupta): Flat 40% of total cost to Tetr (60% MU)\n\nThe 40% flat model is the latest and was independently verified by Akash Sharma & Tarun Gupta on 17 Aug. The CFO needs to ratify one and operationalize a monthly inter-company debit note.' },
+    { name:'shared_systems',
+      keywords:['coach','career coach','coach resume','career','resume','wati','twilio','chatbot','flow builder','shared system','shared systems','shared service','which systems','what systems','coach work','coachlms','coach lms','common tools'],
+      response:'🖥 Shared Systems (MU & Tetr, hosted on AWS)\nTarun Gupta’s Coach Work vertical:\n\n• CoachLMS (Student, Parent & Admin apps)\n• Career Coach (placements vertical)\n• Coach Resume (AI-led resume builder)\n• Wati · Twilio · Chatbotbuilder · Flow Builder\n\nThese are shared across both entities and need a cost-sharing arrangement (see cost split).' },
+    { name:'anomalies',
+      keywords:['anomaly','anomalies','agdm','khalifa','shanti','orbit','mentor union','mentor','billing issue','wrong billing','billed under','billing anomaly','informatics','billing problem'],
+      response:'⚠️ Open Billing Anomalies\n1. AGDM / Khalifa Fund — a Tetr-specific (UAE) EdTech initiative, but its Cloud & AI costs are currently billed under MU (confirmed since 27 May). → Reallocate to Tetr.\n\n2. Orbit & Mentor Union — billed to Shanti Informatics (incl. GST), not MU or Tetr directly (confirmed since 22 May). → Clarify entity relationship & cost ownership.' },
+    { name:'hardware',
+      keywords:['laptop','hardware','interchange','interchanged','interchanging','device','devices','asset','assets','370','899','september','10 sep','10th sep','swap','mobile','ipad','thinkpad','macbook','exchange','1269','1,269'],
+      response:'💻 Hardware Interchange\n• 370 Tetr-owned (“T”-tagged) devices currently with MU employees\n• 899 MU-owned devices currently with Tetr employees\n• Total: 1,269 cross-held devices\n\nDeadline: complete laptop & mobile interchange by 10 September 2026.\n\n⛔ Blocker: Harindra’s team needs Tetr laptop purchase invoices from Tetr Finance (open since 30 Jul).' },
+    { name:'lms_economics',
+      keywords:['lms cost','lms','economics','breakeven','break-even','break even','per user','per-user','pricing','price','margin','502','fixed cost','44.14','44 l','38.23','cost of lms','lms economics','lms pricing','student fee','fee'],
+      response:'🎓 LMS Economics (verified)\n• Full-loaded cost (Sheet-1): ₹44.14L/mo — incl. 30 FTEs (₹37.5L) + infra\n• Lean variant (Sheet-2): ₹39.04L/mo\n• Fixed-cost basis for pricing: ₹38.23L/mo\n• Breakeven: 502 students\n• Per-user cost @ 6,500 users: ₹679 → ₹1,019 with 50% margin\n\nNote: AI credits are exclusive of pricing.' },
+    { name:'tech_spend',
+      keywords:['spend','burn','aws','openrouter','claude','gcp','crisp','saas','subscription','monthly cost','tech cost','7345','7,345','18000','18,000','cloud cost','vendor','software cost','how much on aws'],
+      response:'💳 Monthly Tech Spend (Tarun’s portfolio)\nUSD: $7,345/mo\n• AWS $5,000 · Openrouter $2,000 · Claude AI $200 · Twilio $50 · Crisp $95 (MU-only)\n\nINR: ₹18,000/mo\n• Wati ₹8,000 + GCP ₹10,000\n• Plus Apple Developer ₹10,000 (yearly)\n\nAt 40% Tetr share ≈ $2,938 + ₹7,200 to Tetr (Crisp excluded).' },
+    { name:'discovery',
+      keywords:['punjab app','punjab','startup emirates','emirates','dinero','darwinbox','discovery','19 may','rahul kumar','migration','migrate','old email','older email','base configuration','sole base','tetr account'],
+      response:'🔍 Discovery-Phase Findings (older email threads)\n• Program origin: 19 May 2026 discovery request to map shared systems (Orbit, Dinero, Mentor Union, Darwinbox, LMS).\n• 22 May — Rajat: Orbit & Mentor Union billed to Shanti Informatics.\n• 27 May — Naman: AGDM/Khalifa Fund billed under MU.\n• 15 Jun — Firm 30 Jun deadline set; TETR account approved only the prior week.\n• Punjab App — approved to migrate MU → Tetr (phased, planned downtime).\n• Startup Emirates — external security audit in progress; account changes frozen until certification (critical for AGDM & Khalifa Fund).\n• Dinero & Darwinbox — cited early but status still unconfirmed.\n• Rahul Kumar (VenturePact) coordinating migration.' },
+    { name:'timeline',
+      keywords:['timeline','history','when did','email thread','chronology','26 june','30 june','27 july','3 august','17 august','verification','deadline','program history','what happened','sequence','dates','22 may','27 may','15 june'],
+      response:'🕒 Program Timeline\n• 19 May — Discovery request (shared-systems mapping) — program origin\n• 22 May — Rajat: Orbit & Mentor Union → Shanti Informatics\n• 27 May — Naman: AGDM/Khalifa Fund billed under MU\n• 15 Jun — Firm 30 Jun deadline set; Startup Emirates audit & Punjab App migration surface\n• 26 Jun — Bifurcation formally launched\n• 27 Jul — Rajat’s stack 100% segregated\n• 30 Jul — Hardware segregation track opened\n• 3 Aug — Tarun proposes 40% to Tetr\n• 11 Aug — Live hardware tracking sheet published\n• 17 Aug — Costing verified by Akash & Tarun\n• 19 Aug — Acknowledged' },
+    { name:'actions',
+      keywords:['action','actions','todo','to-do','to do','next step','next steps','blocker','blockers','invoice','invoices','priority','recommendations','action items','open items','pending','what should we do'],
+      response:'🎯 Top Action Items\n1. Ratify cost split & start monthly cross-charging — CFO\n2. Obtain Tetr laptop invoices (BLOCKER since 30 Jul) — Tetr Finance\n3. Fix AGDM billing → reallocate to Tetr — Naman + Finance\n4. Resolve Shanti Informatics billing (Orbit/Mentor Union) — Rajat + Finance\n5. Complete laptop & mobile interchange by 10 Sep — Harindra/Sourabh\n6. Track Punjab App migration MU→Tetr — Naman + Rahul Kumar\n7. Confirm Dinero & Darwinbox bifurcation — function heads + Finance' },
+    { name:'entity',
+      keywords:['what is tetr','what is mu','difference between','entity logic','how to identify','email domain','demarcation','two entities','entity split','masters union vs','mu vs tetr','mu vs','what is masters union','entity identity','tetr college','which entity'],
+      response:'🏷 Entity Identification Logic\nMasters’ Union (MU):\n• @mastersunion.org emails · numeric Emp IDs · models without “(T)”\n\nTetr College of Business:\n• @tetr.org emails · Emp IDs prefixed “T-” · models tagged “(T)”\n\nTetr-specific: AGDM/Khalifa Fund (UAE), Lease Line.\nShared pools (Outgrow Team, Tower CDS, DLF Tower) need an ownership ruling.' },
+    { name:'segregated',
+      keywords:['segregated','segregation','separated','already done','clean','lease line','what is done','completed','rajat stack','fully segregated','independent','done so far'],
+      response:'✅ Cleanly Segregated Today\n• Lease Line → Tetr (completed)\n• Crisp → MU only\n• Rajat’s stack — fully segregated 27 Jul (billing still via Shanti Informatics)\n• AGDM usage = Tetr-only (billing pending fix)\n\nStill shared: Coach Work suite, Wati/Twilio, AWS/GCP/Openrouter/Claude, firewalls/AP/switch licenses.' },
+    { name:'greeting',
+      keywords:['hi','hello','hey','howdy','hola','good morning','good afternoon','good evening'],
+      response:'Hello! 👋 Ask me anything about the MU ↔ Tetr bifurcation — cost splits, shared systems, hardware interchange, LMS economics, billing anomalies, the timeline, discovery-phase findings, or action items.' }
+  ];
+  const FALLBACK = 'I can help with the MU ↔ Tetr bifurcation framework. Try asking about:\n• The cost split between MU and Tetr\n• Shared systems (CoachLMS, Career Coach…)\n• Billing anomalies (AGDM, Shanti Informatics)\n• Hardware interchange (370/899 devices)\n• LMS economics & breakeven\n• Discovery-phase findings (Punjab App, Startup Emirates, Dinero, Darwinbox)\n• Action items & blockers\n\nOr tap an example question below. 👇';
+
+  function hasKeyword(q, kw){
+    kw = kw.toLowerCase();
+    if(kw.indexOf(' ') !== -1) return q.indexOf(kw) !== -1;
+    var esc = kw.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    var re = new RegExp('(^|[^a-z0-9])' + esc + '($|[^a-z0-9])', 'i');
+    return re.test(q);
+  }
+  function findIntent(q){
+    q = q.toLowerCase();
+    var best=null, bestScore=0;
+    for(var i=0;i<INTENTS.length;i++){
+      var it=INTENTS[i], score=0;
+      for(var j=0;j<it.keywords.length;j++){
+        if(hasKeyword(q, it.keywords[j])) score += (it.keywords[j].indexOf(' ')!==-1)?2:1;
+      }
+      if(score>bestScore){bestScore=score;best=it;}
+    }
+    return bestScore>=1?best:null;
+  }
+
+  // ---------- Chat UI ----------
+  var msgs=document.getElementById('chat-msgs');
+  var panel=document.getElementById('chat-panel');
+  var fab=document.getElementById('chat-fab');
+  var input=document.getElementById('chat-input');
+  var form=document.getElementById('chat-form');
+  var greeted=false;
+
+  function toggleChat(){
+    panel.classList.toggle('open');
+    if(panel.classList.contains('open') && !greeted){
+      greeted=true;
+      addMessage('Hi! I’m your Bifurcation Framework Assistant. How can I help you?','bot');
+      setTimeout(function(){ input.focus(); },250);
+    }
+  }
+  function openChatWith(q){
+    if(!panel.classList.contains('open')) toggleChat();
+    if(!greeted){greeted=true;addMessage('Hi! I’m your Bifurcation Framework Assistant. How can I help you?','bot');}
+    addMessage(q,'user'); botReply(q);
+  }
+  function addMessage(text, sender){
+    var wrap=document.createElement('div'); wrap.className='msg '+sender;
+    var b=document.createElement('div'); b.className='bubble'; b.textContent=text;
+    wrap.appendChild(b); msgs.appendChild(wrap); msgs.scrollTop=msgs.scrollHeight;
+  }
+  function showTyping(){
+    var wrap=document.createElement('div'); wrap.className='msg bot'; wrap.id='typing';
+    wrap.innerHTML='<div class="bubble typing"><span></span><span></span><span></span></div>';
+    msgs.appendChild(wrap); msgs.scrollTop=msgs.scrollHeight;
+  }
+  function removeTyping(){ var t=document.getElementById('typing'); if(t)t.remove(); }
+  function botReply(text){
+    showTyping();
+    setTimeout(function(){
+      removeTyping();
+      var intent=findIntent(text);
+      addMessage(intent?intent.response:FALLBACK,'bot');
+    },650);
+  }
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var val=input.value.trim();
+    if(!val) return;
+    if(!greeted){greeted=true;}
+    addMessage(val,'user'); input.value=''; botReply(val);
+  });
+  document.querySelectorAll('#chat-chips .chip').forEach(function(c){
+    c.addEventListener('click',function(){ openChatWith(c.getAttribute('data-q')); });
+  });
+</script>
+</body>
+</html>
