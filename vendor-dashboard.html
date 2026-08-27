@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vendor Account Head Tracking | Apr 2023 – Present</title>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --navy:#0f1e38;--navy2:#1b2d4f;--slate:#5a6b85;--line:#e4e8ef;--bg:#f5f7fa;
+    --card:#fff;--accent:#2563eb;--amber:#d97706;--green:#059669;--red:#dc2626;
+    --ink:#182234;--mut:#7c8aa0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5}
+  .wrap{max-width:1360px;margin:0 auto;padding:0 24px 60px}
+  header{background:linear-gradient(120deg,var(--navy),var(--navy2));color:#fff;padding:34px 24px 26px}
+  header .wrap{padding-bottom:0}
+  .kicker{text-transform:uppercase;letter-spacing:.14em;font-size:11px;color:#9fb3d1;font-weight:600}
+  header h1{font-size:26px;font-weight:700;margin:6px 0 4px;letter-spacing:-.01em}
+  header p{color:#c4d2e8;font-size:14px;max-width:760px}
+  .loader{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 22px;margin:20px 0;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .loader .btn{background:var(--accent);color:#fff;border:none;padding:9px 20px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer}
+  .loader .btn:hover{background:#1d4ed8}
+  .loader .btn:disabled{background:var(--slate);cursor:not-allowed}
+  .loader .status{color:var(--mut);font-size:13px}
+  .loader .status.ok{color:var(--green);font-weight:600}
+  .loader .status.err{color:var(--red);font-weight:600}
+  .loader .stats{margin-left:auto;font-size:12px;color:var(--slate);display:flex;gap:14px;flex-wrap:wrap}
+  .loader .stats b{color:var(--ink)}
+  #fileInput{display:none}
+  .tabs{display:flex;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:40;padding:0 24px}
+  .tabs .wrap{display:flex;gap:4px;padding:0}
+  .tab{padding:15px 20px;font-weight:600;font-size:14px;color:var(--slate);cursor:pointer;border-bottom:3px solid transparent;transition:.15s;white-space:nowrap}
+  .tab:hover{color:var(--ink)}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .tab:disabled{opacity:.4;cursor:not-allowed}
+  .panel{display:none;padding-top:28px}
+  .panel.active{display:block}
+  .grid{display:grid;gap:16px}
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+  .kpi{cursor:pointer;transition:.15s}
+  .kpi:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .kpi .lbl{font-size:12px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+  .kpi .val{font-size:30px;font-weight:700;margin:6px 0 2px;letter-spacing:-.02em}
+  .kpi .sub{font-size:12px;color:var(--slate)}
+  .kpi.accent .val{color:var(--accent)} .kpi.green .val{color:var(--green)} .kpi.amber .val{color:var(--amber)}
+  h2.sec{font-size:17px;font-weight:700;margin:34px 0 4px;letter-spacing:-.01em}
+  p.sub{color:var(--slate);font-size:13px;margin-bottom:16px;max-width:780px}
+  .two{grid-template-columns:1fr 1fr}.three{grid-template-columns:1.2fr .8fr}
+  @media(max-width:900px){.two,.three{grid-template-columns:1fr}}
+  .card h3{font-size:14px;font-weight:700;margin-bottom:4px}
+  .card .desc{font-size:12px;color:var(--mut);margin-bottom:14px}
+  .chart-box{position:relative;height:280px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:#f0f3f8;color:var(--slate);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-size:11px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;position:sticky;top:0;z-index:2}
+  td{padding:10px 12px;border-bottom:1px solid #eef1f6;vertical-align:top}
+  tbody tr:hover{background:#f8fafc}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .mono{font-family:"SF Mono",Menlo,Consolas,monospace;font-size:12px}
+  .link{color:var(--accent);text-decoration:none;cursor:pointer;font-weight:600}
+  .link:hover{text-decoration:underline}
+  .pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;cursor:pointer;transition:.1s}
+  .pill:hover{filter:brightness(.95)}
+  .pill.fixed{background:#e7f6ef;color:var(--green)} .pill.trend{background:#fdf1e3;color:var(--amber)}
+  .pill.pg{background:#e6effd;color:#1d4ed8} .pill.ug{background:#e6f7f4;color:#0f766e}
+  .pill.exec{background:#f3e8fd;color:#7c3aed} .pill.cf{background:#eef1f6;color:#475569}
+  .pill.nm{background:#f1f2f4;color:#94a3b8} .pill.pgb{background:#fef3c7;color:#92400e}
+  .heads{display:flex;flex-wrap:wrap;gap:5px}
+  .head-tag{background:#eef2f7;border:1px solid #e0e6ee;color:#2563eb;font-size:11px;padding:2px 8px;border-radius:6px;cursor:pointer}
+  .head-tag:hover{background:#dbe7ff;border-color:var(--accent)}
+  .filters{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0;align-items:center}
+  .filters input,.filters select{padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;outline:none;min-width:160px}
+  .filters input:focus,.filters select:focus{border-color:var(--accent)}
+  .filters .count{margin-left:auto;font-size:12px;color:var(--mut);font-weight:600}
+  .tbl-wrap{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:auto;max-height:660px}
+  .callout{border-left:4px solid var(--amber);background:#fffaf2;padding:14px 16px;border-radius:8px;margin-top:6px}
+  .callout.info{border-left-color:var(--accent);background:#f3f7fe}
+  .callout b{display:block;margin-bottom:2px}
+  .flag.fixed{color:var(--green)} .flag.trend{color:var(--amber)}
+  .exp{color:var(--accent);cursor:pointer;font-weight:700;user-select:none;display:inline-block;width:18px}
+  .neg{color:var(--red)}
+  .hidden{display:none}
+  .spin{animation:spin 1s linear infinite;display:inline-block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(15,30,56,.55);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:40px 16px;overflow:auto}
+  .overlay.show{display:flex}
+  .modal{background:#fff;border-radius:14px;max-width:860px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:pop .18s ease}
+  @keyframes pop{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .m-head{display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--line)}
+  .m-head .m-title{font-size:17px;font-weight:700;flex:1}
+  .m-head .m-sub{font-size:12px;color:var(--mut)}
+  .m-btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;color:var(--slate)}
+  .m-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .m-body{padding:20px 22px}
+  .m-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px}
+  .m-stat{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:12px}
+  .m-stat .l{font-size:11px;color:var(--mut);text-transform:uppercase;font-weight:600;letter-spacing:.04em}
+  .m-stat .v{font-size:20px;font-weight:700;margin-top:4px}
+  .m-sec{font-size:13px;font-weight:700;margin:18px 0 8px;color:var(--ink)}
+  .m-chart{position:relative;height:200px;margin:8px 0 4px}
+  .hint{font-size:12px;color:var(--mut);margin-top:6px}
+  .crumb{font-size:12px;color:var(--mut)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="kicker">Finance &amp; Spend Analytics</div>
+    <h1>Vendor Account Head Tracking</h1>
+    <p>Transaction history, expense-head mapping, and booking-consistency classification. Every vendor, account head, and segment is clickable — drill down for the full detail.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="loader">
+    <button class="btn" id="loadBtn" onclick="document.getElementById('fileInput').click()">Load CSVs manually</button>
+    <input type="file" id="fileInput" accept=".csv" multiple>
+    <span class="status" id="loadStatus">Initialising…</span>
+    <div class="stats" id="loadStats"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="wrap">
+    <div class="tab active" data-tab="summary">Executive Summary</div>
+    <div class="tab" data-tab="vendors" disabled>Vendor Explorer</div>
+    <div class="tab" data-tab="raw" disabled>Raw Transactions</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ EXECUTIVE SUMMARY ============ -->
+  <div class="panel active" id="panel-summary">
+    <div class="grid kpis">
+      <div class="card kpi accent" data-kpi="vendors"><div class="lbl">Vendors Tracked</div><div class="val" id="kpiVendors">–</div><div class="sub" id="kpiDateRange">–</div></div>
+      <div class="card kpi" data-kpi="raw"><div class="lbl">Expense Bookings</div><div class="val" id="kpiExpenses">–</div><div class="sub" id="kpiTotal">–</div></div>
+      <div class="card kpi green" data-kpi="fixed"><div class="lbl">Fixed Expenses</div><div class="val" id="kpiFixed">–</div><div class="sub" id="kpiFixedSub">single account head</div></div>
+      <div class="card kpi amber" data-kpi="trend"><div class="lbl">Trend Analysis</div><div class="val" id="kpiTrend">–</div><div class="sub" id="kpiTrendSub">multiple account heads</div></div>
+      <div class="card kpi" data-kpi="untagged"><div class="lbl">BU-Tagging Gap</div><div class="val" id="kpiBUgap">–</div><div class="sub" id="kpiBUgapSub">untagged vendors</div></div>
+    </div>
+
+    <h2 class="sec">Classification Logic</h2>
+    <p class="sub">Each vendor is classified by the number of distinct P&amp;L expense heads its spend is booked under. Balance-sheet routing (Accounts Payable, Bank, GST/TDS clearing, Vendor Advances) is excluded so classification reflects genuine spend behaviour.</p>
+    <div class="grid two">
+      <div class="card"><div class="chart-box"><canvas id="classChart"></canvas></div></div>
+      <div class="card">
+        <h3>Definitions</h3>
+        <div class="callout info" style="margin-top:12px"><b class="flag fixed">Fixed Expense</b>Consistently booked under the <b>same</b> expense head every month. Predictable, low-risk coding.</div>
+        <div class="callout"><b class="flag trend">Trend Analysis</b>Spend spread across <b>multiple</b> expense heads. Click any vendor or head to inspect whether the variance is genuine or a booking inconsistency.</div>
+      </div>
+    </div>
+
+    <h2 class="sec">Business Unit Tagging</h2>
+    <p class="sub">Distribution of vendor spend by segment. Click a segment to see every vendor tagged to it.</p>
+    <div class="grid three">
+      <div class="card"><div class="chart-box"><canvas id="buChart"></canvas></div></div>
+      <div class="card">
+        <h3>Tagging Coverage</h3><div class="desc">Vendors by assigned segment</div>
+        <div class="chart-box" style="height:220px"><canvas id="buBar"></canvas></div>
+      </div>
+    </div>
+
+    <h2 class="sec">Trend Analysis — Highest-Variance Vendors</h2>
+    <p class="sub">Vendors with the broadest spread of expense heads. Click a vendor for its full profile, or any account head to see who else uses it.</p>
+    <div class="tbl-wrap">
+      <table id="topTrendTable">
+        <thead><tr><th>Vendor</th><th class="num">Bookings</th><th class="num">Distinct Heads</th><th>Account Heads Used</th><th>Segments</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ VENDOR EXPLORER ============ -->
+  <div class="panel" id="panel-vendors">
+    <h2 class="sec">Vendor Explorer</h2>
+    <p class="sub">Search and filter vendors. Click a vendor name for its full profile, or use <b>▸</b> to expand its account heads inline.</p>
+    <div class="filters">
+      <input id="vSearch" placeholder="Search vendor…">
+      <select id="vClass"><option value="">All Classifications</option><option>Fixed Expense</option><option>Trend Analysis</option></select>
+      <select id="vBU"><option value="">All Segments</option></select>
+      <input id="vHead" placeholder="Filter by account head…">
+      <span class="count" id="vCount">–</span>
+    </div>
+    <div class="tbl-wrap">
+      <table id="vendorTable">
+        <thead><tr><th></th><th>Vendor</th><th>Classification</th><th class="num">Bookings</th><th class="num">Heads</th><th>Segments</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ RAW TRANSACTIONS ============ -->
+  <div class="panel" id="panel-raw">
+    <h2 class="sec">Raw Transactions</h2>
+    <p class="sub">Filterable transaction-level ledger. Vendor names, account heads, and segments are all clickable.</p>
+    <div class="filters">
+      <input id="rSearch" placeholder="Search vendor…">
+      <select id="rHead"><option value="">All Account Heads</option></select>
+      <select id="rBU"><option value="">All Segments</option></select>
+      <select id="rType"><option value="">All Types</option></select>
+      <select id="rSort">
+        <option value="date-desc">Date ↓</option><option value="date-asc">Date ↑</option>
+        <option value="amt-desc">Amount ↓</option><option value="amt-asc">Amount ↑</option>
+      </select>
+      <span class="count" id="rCount">–</span>
+    </div>
+    <div class="tbl-wrap">
+      <table id="rawTable">
+        <thead><tr><th>Date</th><th>Vendor</th><th>Account Head</th><th>Segment</th><th>Department</th><th class="num">Amount (₹)</th><th>Type</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="m-head">
+      <button class="m-btn" id="mBack">← Back</button>
+      <div style="flex:1">
+        <div class="m-title" id="mTitle"></div>
+        <div class="m-sub" id="mSub"></div>
+      </div>
+      <button class="m-btn" id="mClose">✕ Close</button>
+    </div>
+    <div class="m-body" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   CONFIG — the 16 CSVs in the SAME directory as this HTML
+========================================================= */
+const FILES=[
+"1_Detailed General Ledger_60020680930_60066919355_1266420000022249005_1787826392957.csv",
+"2_Detailed General Ledger_60020680930_60066919355_1266420000022249005_1787826479230.csv",
+"3_Detailed General Ledger_60020680930_60066919355_1266420000022249005_1787826558125.csv",
+"4_Detailed General Ledger_60020680930_60066919355_1266420000022249005_1787826606210.csv",
+"5_Detailed General Ledger_60020680930_60066919355_1266420000022249005_1787826701561.csv",
+"6_Detailed General Ledger_60020680930_60066919355_1266420000022249005_1787826754490.csv",
+"7_Detailed General Ledger_60020680930_60066919355_1266420000022249005_1787826789823.csv",
+"8_Detailed General Ledger_60020680930_60066919355_1266420000022249005_1787826825634.csv",
+"9_Detailed General Ledger_60020680930_60066919355_1266420000022249005_1787826899911.csv",
+"10_Detailed General Ledger_60020680930_60066919355_1266420000022249005_1787826936666.csv",
+"11_Detailed General Ledger_60020680930_60066919355_1266420000022249005_1787826975709.csv",
+"12_Detailed General Ledger_60020680930_60066919355_1266420000022249005_1787827009498.csv",
+"13_Detailed General Ledger_60020680930_60066919355_1266420000022249005_1787827045098.csv",
+"14_Detailed General Ledger_60020680930_60066919355_1266420000022249005_1787827082957.csv",
+"15_Detailed General Ledger_60020680930_60066919355_1266420000022249005_1787827130033.csv",
+"16_Detailed General Ledger_60020680930_60066919355_1266420000022249005_1787827193367.csv"
+];
+
+/* =========================================================
+   STATE & HELPERS
+========================================================= */
+const state={rows:[],expRows:[],vendorList:[],vendorIdx:new Map(),headList:[],headIdx:new Map(),
+  segList:[],segIdx:new Map(),charts:{},modalChart:null};
+const $=s=>document.querySelector(s);
+const fmt=n=>new Intl.NumberFormat('en-IN',{maximumFractionDigits:0}).format(n);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=s=>{const v=parseFloat(s);return isFinite(v)?v:0;};
+const fmtAmt=n=>(n<0?'-':'')+'₹'+fmt(Math.abs(n));
+const dstr=d=>d?d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}):'–';
+const segPill=(b,id)=>{const m={"PG":"pg","UG":"ug","Exec":"exec","PGP Bharat":"pgb","Central Functions":"cf","Not mentioned":"nm"};
+  return `<span class="pill ${m[b]||'nm'}" data-nav="seg" data-val="${id}">${esc(b)}</span>`;};
+const classPill=c=>c==="Fixed Expense"?'<span class="pill fixed">Fixed</span>':'<span class="pill trend">Trend</span>';
+const monthKey=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+const monthLabel=k=>{const[y,m]=k.split('-');return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+" '"+y.slice(2);};
+const normalizeBU=s=>{if(!s)return 'Not mentioned';const t=String(s).trim();
+  if(t.toLowerCase().startsWith('exec'))return 'Exec';if(t==='Common')return 'Central Functions';return t||'Not mentioned';};
+
+/* =========================================================
+   CSV PARSING
+========================================================= */
+function normalizeRows(data){
+  if(data.length&&data[0][0]&&String(data[0][0]).toLowerCase().trim()==='date')data=data.slice(1);
+  const out=[];
+  for(const r of data){
+    if(!r||r.length<19||!r[0])continue;
+    const d=new Date(r[0]);
+    if(isNaN(d))continue;
+    out.push({
+      date:r[0],dateObj:d,month:monthKey(d),
+      account_name:(r[1]||'').trim()||'Unknown',
+      vendor:(r[2]||'').trim()||'Unknown',
+      transaction_type:(r[7]||'').trim(),
+      debit:num(r[10]),credit:num(r[11]),net_amount:num(r[12]),
+      account_type:(r[18]||'').trim().toLowerCase(),
+      department:(r[20]||'').trim()||'Not mentioned',
+      school_bu:normalizeBU(r[22])
+    });
+  }
+  return out;
+}
+function parseText(text){return normalizeRows(Papa.parse(text,{skipEmptyLines:true}).data);}
+
+/* =========================================================
+   AUTO-LOAD ON START (GitHub Pages) + MANUAL FALLBACK
+========================================================= */
+const statusEl=$('#loadStatus'),statsEl=$('#loadStats');
+async function autoLoad(){
+  statusEl.className='status';
+  statusEl.innerHTML='<span class="spin">⏳</span> Auto-loading CSVs from this folder…';
+  let rows=[],ok=0,fail=0;
+  for(let i=0;i<FILES.length;i++){
+    const url='./'+encodeURI(FILES[i]);
+    try{
+      const resp=await fetch(url);
+      if(!resp.ok)throw new Error('HTTP '+resp.status);
+      rows.push(...parseText(await resp.text()));
+      ok++;
+    }catch(e){fail++;console.warn('Failed:',url,e);}
+    statusEl.innerHTML=`<span class="spin">⏳</span> Loading ${ok+fail}/${FILES.length} files…`;
+  }
+  if(rows.length===0){
+    statusEl.className='status err';
+    statusEl.textContent='✗ Could not auto-load. Click “Load CSVs manually” and select the 16 files.';
+    return;
+  }
+  finishLoad(rows,ok,fail);
+}
+$('#fileInput').addEventListener('change',async e=>{
+  const files=Array.from(e.target.files);if(!files.length)return;
+  $('#loadBtn').disabled=true;statusEl.className='status';
+  statusEl.innerHTML='<span class="spin">⏳</span> Parsing '+files.length+' files…';
+  let rows=[],done=0;
+  for(const f of files){
+    rows.push(...await new Promise(res=>Papa.parse(f,{skipEmptyLines:true,complete:r=>res(normalizeRows(r.data))})));
+    statusEl.innerHTML=`<span class="spin">⏳</span> Parsed ${++done}/${files.length}…`;
+  }
+  $('#loadBtn').disabled=false;
+  finishLoad(rows,done,0);
+});
+function finishLoad(rows,ok,fail){
+  const cutoff=new Date('2023-04-01');
+  state.rows=rows.filter(r=>r.dateObj>=cutoff);
+  aggregate();buildIndices();
+  statusEl.className='status ok';
+  statusEl.textContent='✓ Loaded'+(fail?` (${fail} file(s) failed)`:'');
+  statsEl.innerHTML=`<span><b>${ok}</b> files</span><span><b>${fmt(state.rows.length)}</b> rows ≥ Apr 2023</span><span><b>${fmt(state.vendorList.length)}</b> vendors</span>`;
+  document.querySelectorAll('.tab').forEach(t=>t.disabled=false);
+  renderAll();
+}
+
+/* =========================================================
+   AGGREGATION
+========================================================= */
+function aggregate(){
+  const exp=state.rows.filter(r=>r.account_type==='expense');
+  state.expRows=exp;
+  const V=new Map(),H=new Map();
+  for(const r of exp){
+    const v=r.vendor,h=r.account_name,bu=r.school_bu,m=r.month,amt=r.net_amount;
+    if(!V.has(v))V.set(v,{vendor:v,n:0,amt:0,heads:new Map(),bus:new Map(),monthly:new Map(),first:r.dateObj,last:r.dateObj});
+    const vo=V.get(v);vo.n++;vo.amt+=amt;
+    if(r.dateObj<vo.first)vo.first=r.dateObj;if(r.dateObj>vo.last)vo.last=r.dateObj;
+    if(!vo.heads.has(h))vo.heads.set(h,{n:0,amt:0});
+    const hv=vo.heads.get(h);hv.n++;hv.amt+=amt;
+    if(!vo.bus.has(bu))vo.bus.set(bu,{n:0,amt:0});
+    const bv=vo.bus.get(bu);bv.n++;bv.amt+=amt;
+    vo.monthly.set(m,(vo.monthly.get(m)||0)+amt);
+    if(!H.has(h))H.set(h,{head:h,n:0,amt:0,vendors:new Map(),bus:new Map(),monthly:new Map(),first:r.dateObj,last:r.dateObj});
+    const ho=H.get(h);ho.n++;ho.amt+=amt;
+    if(r.dateObj<ho.first)ho.first=r.dateObj;if(r.dateObj>ho.last)ho.last=r.dateObj;
+    if(!ho.vendors.has(v))ho.vendors.set(v,{n:0,amt:0});
+    const vh=ho.vendors.get(v);vh.n++;vh.amt+=amt;
+    if(!ho.bus.has(bu))ho.bus.set(bu,{n:0});
+    ho.bus.get(bu).n++;
+    ho.monthly.set(m,(ho.monthly.get(m)||0)+amt);
+  }
+  state.vendorList=[...V.values()].map(o=>({...o,classification:o.heads.size===1?'Fixed Expense':'Trend Analysis'})).sort((a,b)=>b.n-a.n);
+  state.headList=[...H.values()].sort((a,b)=>b.n-a.n);
+}
+function buildIndices(){
+  state.vendorIdx=new Map(state.vendorList.map((o,i)=>[o.vendor,i]));
+  state.headIdx=new Map(state.headList.map((o,i)=>[o.head,i]));
+  const segs=new Set();state.vendorList.forEach(o=>o.bus.forEach((_,b)=>segs.add(b)));
+  state.segList=[...segs];state.segIdx=new Map(state.segList.map((b,i)=>[b,i]));
+}
+
+/* =========================================================
+   TABS
+========================================================= */
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  if(t.disabled)return;switchTab(t.dataset.tab);
+}));
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===name));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id==='panel-'+name));
+}
+
+/* =========================================================
+   RENDER ALL
+========================================================= */
+function renderAll(){
+  renderKPIs();renderSummaryCharts();renderTopTrend();
+  populateFilterOptions();renderVendors();renderRaw();
+}
+function renderKPIs(){
+  const v=state.vendorList,exp=state.expRows;
+  const fixed=v.filter(x=>x.classification==='Fixed Expense').length;
+  const trend=v.length-fixed;
+  const untagged=v.filter(x=>[...x.bus.keys()].every(b=>b==='Not mentioned')).length;
+  $('#kpiVendors').textContent=fmt(v.length);
+  let mn=null,mx=null;for(const r of state.rows){const t=r.dateObj.getTime();if(mn===null||t<mn)mn=t;if(mx===null||t>mx)mx=t;}
+  if(mn!==null)$('#kpiDateRange').textContent=dstr(new Date(mn))+' – '+dstr(new Date(mx));
+  $('#kpiExpenses').textContent=fmt(exp.length);
+  $('#kpiTotal').textContent='of '+fmt(state.rows.length)+' GL lines';
+  $('#kpiFixed').textContent=fmt(fixed);
+  $('#kpiFixedSub').textContent=v.length?((fixed/v.length*100).toFixed(0)+'% · single head'):'–';
+  $('#kpiTrend').textContent=fmt(trend);
+  $('#kpiTrendSub').textContent=v.length?((trend/v.length*100).toFixed(0)+'% · multiple heads'):'–';
+  $('#kpiBUgap').textContent=v.length?((untagged/v.length*100).toFixed(0)+'%'):'–';
+  $('#kpiBUgapSub').textContent=fmt(untagged)+' vendors untagged';
+}
+function renderSummaryCharts(){
+  Chart.defaults.font.family='-apple-system,Inter,Segoe UI,Roboto,sans-serif';Chart.defaults.color='#5a6b85';
+  const v=state.vendorList,fixed=v.filter(x=>x.classification==='Fixed Expense').length,trend=v.length-fixed;
+  if(state.charts.cls)state.charts.cls.destroy();
+  state.charts.cls=new Chart($('#classChart'),{type:'doughnut',
+    data:{labels:['Fixed Expense ('+fmt(fixed)+')','Trend Analysis ('+fmt(trend)+')'],
+      datasets:[{data:[fixed,trend],backgroundColor:['#059669','#d97706'],borderWidth:3,borderColor:'#fff'}]},
+    options:{maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom'}}}});
+  const buCount=new Map();v.forEach(o=>o.bus.forEach((_,b)=>buCount.set(b,(buCount.get(b)||0)+1)));
+  const order=['Not mentioned','Central Functions','PG','UG','Exec','PGP Bharat'];
+  const cols={'Not mentioned':'#cbd5e1','Central Functions':'#475569','PG':'#2563eb','UG':'#0ea5a4','Exec':'#7c3aed','PGP Bharat':'#f59e0b'};
+  const labels=[],data=[],colors=[];
+  order.forEach(k=>{if(buCount.has(k)){labels.push(k+' ('+fmt(buCount.get(k))+')');data.push(buCount.get(k));colors.push(cols[k]);}});
+  buCount.forEach((val,k)=>{if(!order.includes(k)){labels.push(k+' ('+fmt(val)+')');data.push(val);colors.push('#94a3b8');}});
+  if(state.charts.bu)state.charts.bu.destroy();
+  state.charts.bu=new Chart($('#buChart'),{type:'doughnut',
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:3,borderColor:'#fff'}]},
+    options:{maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'right'}}}});
+  if(state.charts.bub)state.charts.bub.destroy();
+  state.charts.bub=new Chart($('#buBar'),{type:'bar',
+    data:{labels:labels.map(l=>l.replace(/ \(.*/,'')),datasets:[{data,backgroundColor:colors,borderRadius:5}]},
+    options:{maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{display:false}}}}});
+}
+function renderTopTrend(){
+  const top=state.vendorList.filter(v=>v.classification==='Trend Analysis').sort((a,b)=>b.heads.size-a.heads.size).slice(0,15);
+  $('#topTrendTable tbody').innerHTML=top.map(o=>{
+    const vid=state.vendorIdx.get(o.vendor);
+    const heads=[...o.heads.entries()].sort((a,b)=>b[1].n-a[1].n).slice(0,5)
+      .map(([h,s])=>`<span class="head-tag" data-nav="head" data-val="${state.headIdx.get(h)}">${esc(h)}</span>`).join('');
+    const bus=[...o.bus.keys()].slice(0,3).map(b=>segPill(b,state.segIdx.get(b))).join(' ');
+    return `<tr><td><a class="link" data-nav="vendor" data-val="${vid}">${esc(o.vendor)}</a></td>
+      <td class="num">${fmt(o.n)}</td><td class="num"><b>${o.heads.size}</b></td>
+      <td><div class="heads">${heads}${o.heads.size>5?'<span class="head-tag">+'+(o.heads.size-5)+' more</span>':''}</div></td>
+      <td>${bus}</td></tr>`;
+  }).join('');
+}
+
+/* =========================================================
+   FILTER OPTIONS + VENDOR EXPLORER
+========================================================= */
+function populateFilterOptions(){
+  const segs=state.segList;
+  $('#vBU').innerHTML='<option value="">All Segments</option>'+segs.map(s=>`<option>${esc(s)}</option>`).join('');
+  $('#rBU').innerHTML='<option value="">All Segments</option>'+segs.map(s=>`<option>${esc(s)}</option>`).join('');
+  const heads=state.headList.map(o=>o.head);
+  $('#rHead').innerHTML='<option value="">All Account Heads</option>'+heads.map(h=>`<option>${esc(h)}</option>`).join('');
+  const types=[...new Set(state.expRows.map(r=>r.transaction_type))].filter(Boolean).sort();
+  $('#rType').innerHTML='<option value="">All Types</option>'+types.map(t=>`<option>${esc(t)}</option>`).join('');
+}
+const VCAP=3000;
+function renderVendors(){
+  const q=($('#vSearch').value||'').toLowerCase(),cls=$('#vClass').value,bu=$('#vBU').value,hd=($('#vHead').value||'').toLowerCase();
+  const rows=state.vendorList.filter(o=>
+    (!q||o.vendor.toLowerCase().includes(q))&&
+    (!cls||o.classification===cls)&&
+    (!bu||o.bus.has(bu))&&
+    (!hd||[...o.heads.keys()].some(h=>h.toLowerCase().includes(hd))));
+  $('#vCount').textContent=fmt(rows.length)+' vendors'+(rows.length>VCAP?' (showing first '+VCAP+')':'');
+  const slice=rows.slice(0,VCAP);
+  $('#vendorTable tbody').innerHTML=slice.map((o,i)=>{
+    const vid=state.vendorIdx.get(o.vendor);
+    const headChips=[...o.heads.entries()].sort((a,b)=>b[1].n-a[1].n)
+      .map(([h,s])=>`<span class="head-tag" data-nav="head" data-val="${state.headIdx.get(h)}">${esc(h)} (${s.n})</span>`).join('');
+    const bus=[...o.bus.keys()].map(b=>segPill(b,state.segIdx.get(b))).join(' ');
+    return `<tr>
+      <td><span class="exp" data-exp="x${i}">▸</span></td>
+      <td><a class="link" data-nav="vendor" data-val="${vid}">${esc(o.vendor)}</a></td>
+      <td>${classPill(o.classification)}</td>
+      <td class="num"><a class="link" data-jump="raw-vendor" data-val="${vid}">${fmt(o.n)}</a></td>
+      <td class="num"><a class="link" data-nav="vendor" data-val="${vid}">${o.heads.size}</a></td>
+      <td>${bus}</td>
+    </tr>
+    <tr id="x${i}" class="hidden"><td></td><td colspan="5">
+      <div class="hint" style="margin-bottom:6px">Account heads (click to inspect):</div>
+      <div class="heads">${headChips}</div>
+      <div class="hint" style="margin-top:8px">First booking ${dstr(o.first)} · Last booking ${dstr(o.last)} · Net ${fmtAmt(o.amt)}</div>
+    </td></tr>`;
+  }).join('');
+}
+['vSearch','vClass','vBU','vHead'].forEach(id=>$('#'+id).addEventListener('input',renderVendors));
+
+/* =========================================================
+   RAW TRANSACTIONS
+========================================================= */
+const RCAP=5000;
+function renderRaw(){
+  const q=($('#rSearch').value||'').toLowerCase(),hd=$('#rHead').value,bu=$('#rBU').value,ty=$('#rType').value,sort=$('#rSort').value;
+  let rows=state.expRows.filter(r=>
+    (!q||r.vendor.toLowerCase().includes(q))&&
+    (!hd||r.account_name===hd)&&(!bu||r.school_bu===bu)&&(!ty||r.transaction_type===ty));
+  if(sort==='date-asc')rows.sort((a,b)=>a.dateObj-b.dateObj);
+  else if(sort==='amt-desc')rows.sort((a,b)=>Math.abs(b.net_amount)-Math.abs(a.net_amount));
+  else if(sort==='amt-asc')rows.sort((a,b)=>Math.abs(a.net_amount)-Math.abs(b.net_amount));
+  else rows.sort((a,b)=>b.dateObj-a.dateObj);
+  const total=rows.reduce((s,r)=>s+r.net_amount,0);
+  $('#rCount').textContent=fmt(rows.length)+' entries · '+fmtAmt(total)+(rows.length>RCAP?' (showing first '+RCAP+')':'');
+  $('#rawTable tbody').innerHTML=rows.slice(0,RCAP).map(r=>{
+    const vid=state.vendorIdx.get(r.vendor),hid=state.headIdx.get(r.account_name),sid=state.segIdx.get(r.school_bu);
+    return `<tr>
+      <td class="mono">${esc(r.date)}</td>
+      <td><a class="link" data-nav="vendor" data-val="${vid}">${esc(r.vendor)}</a></td>
+      <td><a class="link" data-nav="head" data-val="${hid}">${esc(r.account_name)}</a></td>
+      <td>${segPill(r.school_bu,sid)}</td>
+      <td>${esc(r.department)}</td>
+      <td class="num ${r.net_amount<0?'neg':''}">${fmtAmt(r.net_amount)}</td>
+      <td class="mono">${esc(r.transaction_type)}</td>
+    </tr>`;
+  }).join('');
+}
+['rSearch','rHead','rBU','rType','rSort'].forEach(id=>$('#'+id).addEventListener('input',renderRaw));
+
+/* =========================================================
+   MODAL DRILL-DOWN SYSTEM
+========================================================= */
+let modalStack=[];
+function openNav(type,id){modalStack=[{type,id}];renderModal();$('#overlay').classList.add('show');}
+function pushNav(type,id){modalStack.push({type,id});renderModal();}
+function backNav(){if(modalStack.length>1){modalStack.pop();renderModal();}else closeNav();}
+function closeNav(){modalStack=[];$('#overlay').classList.remove('show');if(state.modalChart){state.modalChart.destroy();state.modalChart=null;}}
+$('#mBack').addEventListener('click',backNav);
+$('#mClose').addEventListener('click',closeNav);
+$('#overlay').addEventListener('click',e=>{if(e.target===$('#overlay'))closeNav();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeNav();});
+
+function renderModal(){
+  const top=modalStack[modalStack.length-1];
+  $('#mBack').style.visibility=modalStack.length>1?'visible':'hidden';
+  let page;
+  if(top.type==='vendor')page=vendorPage(top.id);
+  else if(top.type==='head')page=headPage(top.id);
+  else if(top.type==='seg')page=segPage(top.id);
+  else page={title:'Detail',sub:'',html:'',monthly:null};
+  $('#mTitle').textContent=page.title;
+  $('#mSub').innerHTML=page.sub;
+  $('#mBody').innerHTML=page.html;
+  if(state.modalChart){state.modalChart.destroy();state.modalChart=null;}
+  if(page.monthly){
+    const keys=[...page.monthly.keys()].sort();
+    const cv=document.getElementById('mchart');
+    if(cv){state.modalChart=new Chart(cv,{type:'bar',
+      data:{labels:keys.map(monthLabel),datasets:[{data:keys.map(k=>page.monthly.get(k)),backgroundColor:'#2563eb',borderRadius:3}]},
+      options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#eef1f6'}}}}});}
+  }
+}
+const statCard=(l,v)=>`<div class="m-stat"><div class="l">${l}</div><div class="v">${v}</div></div>`;
+const monthlyChartHTML=`<div class="m-sec">Monthly spend</div><div class="m-chart"><canvas id="mchart"></canvas></div>`;
+
+function vendorPage(id){
+  const o=state.vendorList[id];if(!o)return{title:'Not found',sub:'',html:''};
+  const heads=[...o.heads.entries()].map(([h,s])=>({h,n:s.n,amt:s.amt,id:state.headIdx.get(h)})).sort((a,b)=>b.n-a.n);
+  const bus=[...o.bus.entries()].map(([b,s])=>({b,n:s.n,amt:s.amt,id:state.segIdx.get(b)})).sort((a,b)=>b.n-a.n);
+  const headsRows=heads.map(x=>`<tr>
+      <td><a class="link" data-nav="head" data-val="${x.id}">${esc(x.h)}</a></td>
+      <td class="num">${fmt(x.n)}</td><td class="num ${x.amt<0?'neg':''}">${fmtAmt(x.amt)}</td></tr>`).join('');
+  const busHTML=bus.map(x=>`${segPill(x.b,x.id)} <span class="hint">${fmt(x.n)} · ${fmtAmt(x.amt)}</span><br>`).join('');
+  const html=`
+    <div class="m-stats">
+      ${statCard('Classification',o.classification)}
+      ${statCard('Total bookings',fmt(o.n))}
+      ${statCard('Account heads',o.heads.size)}
+      ${statCard('Net amount',`<span class="${o.amt<0?'neg':''}">${fmtAmt(o.amt)}</span>`)}
+      ${statCard('First seen',dstr(o.first))}
+      ${statCard('Last seen',dstr(o.last))}
+    </div>
+    ${monthlyChartHTML}
+    <div class="m-sec">Account heads used (${heads.length})</div>
+    <div class="tbl-wrap" style="max-height:260px"><table>
+      <thead><tr><th>Account Head</th><th class="num">Bookings</th><th class="num">Net Amount</th></tr></thead>
+      <tbody>${headsRows}</tbody></table></div>
+    <div class="m-sec">Segments</div><div>${busHTML}</div>
+    <div class="hint">Click any account head to see every other vendor booked under it.</div>`;
+  return {title:o.vendor,sub:classPill(o.classification)+' &nbsp; Vendor profile',html,monthly:o.monthly};
+}
+function headPage(id){
+  const o=state.headList[id];if(!o)return{title:'Not found',sub:'',html:''};
+  const vendors=[...o.vendors.entries()].map(([v,s])=>({v,n:s.n,amt:s.amt,id:state.vendorIdx.get(v)})).sort((a,b)=>b.n-a.n).slice(0,60);
+  const vRows=vendors.map(x=>`<tr>
+      <td><a class="link" data-nav="vendor" data-val="${x.id}">${esc(x.v)}</a></td>
+      <td class="num">${fmt(x.n)}</td><td class="num ${x.amt<0?'neg':''}">${fmtAmt(x.amt)}</td></tr>`).join('');
+  const bus=[...o.bus.entries()].map(([b,s])=>({b,n:s.n,id:state.segIdx.get(b)})).sort((a,b)=>b.n-a.n);
+  const busHTML=bus.map(x=>`${segPill(x.b,x.id)} <span class="hint">${fmt(x.n)}</span> `).join('');
+  const html=`
+    <div class="m-stats">
+      ${statCard('Vendors using this head',o.vendors.size)}
+      ${statCard('Total bookings',fmt(o.n))}
+      ${statCard('Net amount',`<span class="${o.amt<0?'neg':''}">${fmtAmt(o.amt)}</span>`)}
+      ${statCard('First seen',dstr(o.first))}
+      ${statCard('Last seen',dstr(o.last))}
+    </div>
+    ${monthlyChartHTML}
+    <div class="m-sec">Top vendors under this head (${Math.min(60,o.vendors.size)} of ${o.vendors.size})</div>
+    <div class="tbl-wrap" style="max-height:280px"><table>
+      <thead><tr><th>Vendor</th><th class="num">Bookings</th><th class="num">Net Amount</th></tr></thead>
+      <tbody>${vRows}</tbody></table></div>
+    <div class="m-sec">Segments</div><div>${busHTML}</div>
+    <div class="hint">Click a vendor to open its full profile.</div>`;
+  return {title:o.head,sub:'Account head detail',html,monthly:o.monthly};
+}
+function segPage(id){
+  const bu=state.segList[id];if(bu===undefined)return{title:'Not found',sub:'',html:''};
+  const rows=state.vendorList.filter(o=>o.bus.has(bu))
+    .map(o=>({o,n:o.bus.get(bu).n,amt:o.bus.get(bu).amt,id:state.vendorIdx.get(o.vendor)}))
+    .sort((a,b)=>b.n-a.n).slice(0,80);
+  const totalN=rows.reduce((s,x)=>s+x.n,0);
+  const rRows=rows.map(x=>`<tr>
+      <td><a class="link" data-nav="vendor" data-val="${x.id}">${esc(x.o.vendor)}</a></td>
+      <td class="num">${fmt(x.n)}</td><td class="num ${x.amt<0?'neg':''}">${fmtAmt(x.amt)}</td>
+      <td>${classPill(x.o.classification)}</td></tr>`).join('');
+  const html=`
+    <div class="m-stats">
+      ${statCard('Vendors tagged',rows.length)}
+      ${statCard('Bookings (top 80)',fmt(totalN))}
+    </div>
+    <div class="m-sec">Vendors in this segment</div>
+    <div class="tbl-wrap" style="max-height:340px"><table>
+      <thead><tr><th>Vendor</th><th class="num">Bookings</th><th class="num">Net Amount</th><th>Classification</th></tr></thead>
+      <tbody>${rRows}</tbody></table></div>
+    <div class="hint">Click a vendor to open its full profile.</div>`;
+  return {title:bu,sub:'Segment drill-down',html,monthly:null};
+}
+
+/* =========================================================
+   GLOBAL CLICK ROUTER (hyperlinking everywhere)
+========================================================= */
+document.addEventListener('click',e=>{
+  const nav=e.target.closest('[data-nav]');
+  if(nav){e.preventDefault();openNav(nav.dataset.nav,nav.dataset.val);return;}
+  const exp=e.target.closest('[data-exp]');
+  if(exp){const row=document.getElementById(exp.dataset.exp);
+    if(row){row.classList.toggle('hidden');exp.textContent=row.classList.contains('hidden')?'▸':'▾';}return;}
+  const jump=e.target.closest('[data-jump]');
+  if(jump){e.preventDefault();
+    if(jump.dataset.jump==='raw-vendor'){const o=state.vendorList[jump.dataset.val];
+      if(o){$('#rSearch').value=o.vendor;renderRaw();switchTab('raw');}
+    }return;}
+  const kpi=e.target.closest('[data-kpi]');
+  if(kpi){const k=kpi.dataset.kpi;
+    if(k==='vendors'){switchTab('vendors');}
+    else if(k==='raw'){switchTab('raw');}
+    else if(k==='fixed'){$('#vClass').value='Fixed Expense';renderVendors();switchTab('vendors');}
+    else if(k==='trend'){$('#vClass').value='Trend Analysis';renderVendors();switchTab('vendors');}
+    else if(k==='untagged'){$('#vBU').value='Not mentioned';renderVendors();switchTab('vendors');}
+    return;}
+});
+
+/* start */
+autoLoad();
+</script>
+</body>
+</html>
