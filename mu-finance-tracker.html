@@ -137,7 +137,7 @@ td input.remark:hover,td input.remark:focus{border-color:var(--line);background:
 <script id="sample" type="application/json">[{"ID": "FIN-1", "Report": "Prepaid card report", "Owner": "Ashish Sharma", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "", "Remarks": "No submission on the email thread as on 15-Sep-2026."}, {"ID": "FIN-2", "Report": "Accounts receivable", "Owner": "Aslam Khan", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "", "Remarks": "No submission on the email thread as on 15-Sep-2026."}, {"ID": "FIN-3", "Report": "Forex Card report", "Owner": "Brijesh Chourasiya", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "", "Remarks": "No submission on the email thread as on 15-Sep-2026."}, {"ID": "FIN-4", "Report": "Weekly Bank reconciliation", "Owner": "Brijesh Chourasiya", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "", "Remarks": "No submission on the email thread as on 15-Sep-2026. Required on email by Friday EOD."}, {"ID": "FIN-5", "Report": "Weekly payment report (last Friday to Thursday)", "Owner": "Brijesh Chourasiya", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "", "Remarks": "No submission on the email thread as on 15-Sep-2026. Covers payments made last Friday to Thursday; due by Friday EOD."}, {"ID": "FIN-6", "Report": "Employee Loan & advances (Salary related)", "Owner": "Rohit Jha", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "2026-09-11", "Remarks": "Received on email 11-Sep-2026 17:18. Draft shared 9-Sep-2026 (data as of 8-Sep). Rohit asked whether the format needs additional detail - no reply on thread."}, {"ID": "FIN-7", "Report": "Employee Loan & advances (Official Work / Staff Reimbursement)", "Owner": "Rohit Jha", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "2026-09-11", "Remarks": "Received on email 11-Sep-2026 17:18. Draft shared 9-Sep-2026 (data as of 8-Sep)."}, {"ID": "FIN-8", "Report": "Vendor Ageing report", "Owner": "Vivek Srivastava", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "", "Remarks": "No submission on the email thread as on 15-Sep-2026."}, {"ID": "FIN-9", "Report": "Vendor Cleanup & Sync name with Orbit", "Owner": "Vivek Srivastava", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "", "Remarks": "No submission on the email thread as on 15-Sep-2026."}, {"ID": "FIN-10", "Report": "Master Revenue sheet - cohort wise, student wise + Forecast", "Owner": "Akshita Goyal", "Frequency": "Weekly", "Due day": "Wednesday", "Due date": "2026-09-16", "Received on": "", "Remarks": "Discuss issues with Ravi."}, {"ID": "FIN-11", "Report": "AR aging tracker", "Owner": "Akshita Goyal", "Frequency": "Weekly", "Due day": "Wednesday", "Due date": "2026-09-16", "Received on": "", "Remarks": "Discuss issues with Ravi."}, {"ID": "FIN-12", "Report": "Prepaid sheet", "Owner": "Rohit Jha", "Frequency": "Weekly", "Due day": "Wednesday", "Due date": "2026-09-16", "Received on": "", "Remarks": "Discuss issues with Sameer."}, {"ID": "FIN-13", "Report": "Daily collection report", "Owner": "Aslam Khan / Karan", "Frequency": "Daily", "Due day": "Every working day", "Due date": "2026-09-15", "Received on": "", "Remarks": "Joint ownership Aslam/Karan."}, {"ID": "FIN-14", "Report": "Security refunds tracking", "Owner": "Rohit Jha", "Frequency": "Weekly", "Due day": "Wednesday", "Due date": "2026-09-16", "Received on": "", "Remarks": "Discuss issues with Sameer."}, {"ID": "FIN-15", "Report": "Expense provision sheet - department wise", "Owner": "Sameer", "Frequency": "Weekly", "Due day": "Tuesday", "Due date": "2026-09-15", "Received on": "", "Remarks": ""}, {"ID": "FIN-16", "Report": "Master rentals sheet - office, campus, hostels", "Owner": "Vivek Srivastava", "Frequency": "Weekly", "Due day": "Tuesday", "Due date": "2026-09-15", "Received on": "", "Remarks": "Discuss issues with Sameer."}, {"ID": "FIN-17", "Report": "AP aging", "Owner": "Vivek Srivastava", "Frequency": "Weekly", "Due day": "Thursday", "Due date": "2026-09-17", "Received on": "", "Remarks": "Discuss issues with Sameer."}, {"ID": "FIN-18", "Report": "Vendor advance aging", "Owner": "Vivek Srivastava", "Frequency": "Weekly", "Due day": "Thursday", "Due date": "2026-09-17", "Received on": "", "Remarks": "Discuss issues with Sameer."}, {"ID": "FIN-19", "Report": "Monthly cashflow tracker - inflow / outflow", "Owner": "Sameer", "Frequency": "Monthly", "Due day": "16th of month", "Due date": "2026-09-16", "Received on": "", "Remarks": ""}, {"ID": "FIN-20", "Report": "Fixed expense tracker", "Owner": "Vivek Srivastava", "Frequency": "Weekly", "Due day": "Wednesday", "Due date": "2026-09-16", "Received on": "", "Remarks": "Discuss issues with Sameer."}, {"ID": "FIN-21", "Report": "Team KRAs", "Owner": "Sameer", "Frequency": "One Time", "Due day": "", "Due date": "2026-09-15", "Received on": "", "Remarks": "One-time deliverable."}]</script>
 <script>
 // If you want to skip the Setup step for everyone, paste the Web app URL here:
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxEgAnjQ8i7punNst85nRUiQ_y4sHRehNXiATDoE7XX13M5EBVRdVT-WT4HAAQA_lAxdg/exec';
+var SCRIPT_URL = '';
 
 var $ = function(s){ return document.querySelector(s); };
 var cfg = {url:'', name:'', pass:''};
@@ -150,8 +150,22 @@ function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0
 function today(){ return iso(new Date()); }
 function parse(s){ var p=s.split('-'); return new Date(+p[0],+p[1]-1,+p[2]); }
 function addDays(s,n){ var d=parse(s); d.setDate(d.getDate()+n); return iso(d); }
-function nice(s){ if(!s) return ''; var d=parse(s); return DOW[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()]; }
-function statusOf(r){ if(r['Received on']) return 'received'; var t=today(); if(r['Due date']<t) return 'overdue'; if(r['Due date']===t) return 'due'; return 'upcoming'; }
+var MONTHS={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,sept:9,oct:10,nov:11,dec:12};
+// accepts 2026-09-11, 11-Sep-2026, 11/09/2026, Sep 11 2026 ... and returns 2026-09-11 (or '' if unreadable)
+function normDate(v){
+  if(v==null||v==='') return '';
+  var s=String(v).trim(), m, y, mo, d;
+  if((m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))){ y=+m[1]; mo=+m[2]; d=+m[3]; }
+  else if((m=s.match(/^(\d{1,2})[-\/ ]([A-Za-z]{3,4})[-\/ ,]*(\d{2,4})$/))){ d=+m[1]; mo=MONTHS[m[2].toLowerCase()]; y=+m[3]; }
+  else if((m=s.match(/^([A-Za-z]{3,9})\s+(\d{1,2}),?\s+(\d{4})$/))){ mo=MONTHS[m[1].slice(0,3).toLowerCase()]; d=+m[2]; y=+m[3]; }
+  else if((m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})$/))){ d=+m[1]; mo=+m[2]; y=+m[3]; }
+  else { var t=new Date(s); if(isNaN(t.getTime())) return ''; return iso(t); }
+  if(!mo||!d||!y) return ''; if(y<100) y+=2000;
+  return y+'-'+('0'+mo).slice(-2)+'-'+('0'+d).slice(-2);
+}
+function nice(s){ if(!s) return ''; var n=normDate(s); if(!n) return s; var d=parse(n); return DOW[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()]; }
+function cleanRows(list){ return list.map(function(r){ r['Due date']=normDate(r['Due date']); r['Received on']=normDate(r['Received on']); return r; }); }
+function statusOf(r){ if(r['Received on']) return 'received'; var t=today(); if(!r['Due date']) return 'upcoming'; if(r['Due date']<t) return 'overdue'; if(r['Due date']===t) return 'due'; return 'upcoming'; }
 var LABEL = {overdue:'Overdue', due:'Due today', upcoming:'Coming up', received:'Received'};
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 function toast(t){ var e=$('#toast'); e.textContent=t; e.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(function(){e.classList.remove('show');},2500); }
@@ -160,7 +174,7 @@ function setNote(t){ var n=$('#note'); n.textContent=t||''; n.classList.toggle('
 // ---------- talk to the Sheet ----------
 async function loadRows(){
   if(!cfg.url){
-    rows = JSON.parse($('#sample').textContent); demo = true;
+    rows = cleanRows(JSON.parse($('#sample').textContent)); demo = true;
     $('#sub').textContent = 'Sample data'; setNote('This is sample data. Click Setup to connect the page to your Google Sheet.');
     render(); return;
   }
@@ -169,7 +183,7 @@ async function loadRows(){
     var r = await fetch(cfg.url + '?t=' + Date.now());
     var j = await r.json();
     if(!j.ok) throw new Error(j.error || 'Sheet did not respond');
-    rows = j.rows; demo = false; setNote('');
+    rows = cleanRows(j.rows); demo = false; setNote('');
     $('#sub').textContent = 'Synced with Google Sheet at ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
     render();
   }catch(e){
@@ -185,7 +199,7 @@ async function send(req){
     var r = await fetch(cfg.url, {method:'POST', body: JSON.stringify(req)});
     var j = await r.json();
     if(!j.ok) throw new Error(j.error || 'Save failed');
-    rows = j.rows; render();
+    rows = cleanRows(j.rows); render();
     $('#sub').textContent = 'Saved to Google Sheet at ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
     return true;
   }catch(e){ toast('Not saved: ' + e.message); return false; }
