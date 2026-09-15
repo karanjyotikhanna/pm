@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finance reports tracker</title>
+<style>
+:root{--ink:#1b2a2e;--muted:#5d6e73;--line:#d9e0dd;--soft:#f3f6f5;--green:#1f5e4b;--green-bg:#dcede4;--amber:#a86a12;--amber-bg:#fbeed6;--red:#a33a2c;--red-bg:#f6e1dc;--grey:#5a6b72;--grey-bg:#e8ecee}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--ink);font:16px/1.45 "Segoe UI",Arial,sans-serif}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:6px;padding:8px 14px}
+button:hover{background:var(--soft)}
+button.go{background:var(--green);border-color:var(--green);color:#fff;font-weight:600}
+button.go:hover{background:#174a3b}
+button.small{padding:5px 10px;font-size:14px}
+input,select{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:#fff}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #9cc5b6;outline-offset:1px}
+
+header{padding:18px 24px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header h1{margin:0;font-size:22px}
+header .sub{color:var(--muted);font-size:14px}
+header .grow{flex:1}
+
+.counts{display:flex;gap:10px;padding:16px 24px 0;flex-wrap:wrap}
+.count{display:flex;flex-direction:column;align-items:flex-start;min-width:130px;padding:10px 14px;border:2px solid var(--line);border-radius:8px;background:#fff}
+.count b{font-size:28px;line-height:1}
+.count span{font-size:14px;color:var(--muted);margin-top:2px}
+.count.on{border-color:var(--ink)}
+.count.overdue b{color:var(--red)} .count.due b{color:var(--amber)} .count.upcoming b{color:var(--grey)} .count.received b{color:var(--green)}
+
+.filters{display:flex;gap:10px;padding:14px 24px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.filters label{font-size:14px;color:var(--muted)}
+.note{margin:14px 24px 0;padding:10px 14px;border-radius:6px;background:var(--amber-bg);color:#5a3a06;font-size:15px;display:none}
+.note.show{display:block}
+
+main{padding:16px 24px 60px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:14px;color:var(--muted);font-weight:600;padding:8px 10px;border-bottom:2px solid var(--line)}
+td{padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+td .id{font-size:13px;color:var(--muted)}
+td .title{font-weight:600}
+td .when{font-size:14px;color:var(--muted)}
+.chip{display:inline-block;padding:4px 10px;border-radius:6px;font-weight:600;font-size:14px;white-space:nowrap}
+.chip.overdue{background:var(--red-bg);color:var(--red)} .chip.due{background:var(--amber-bg);color:var(--amber)}
+.chip.upcoming{background:var(--grey-bg);color:var(--grey)} .chip.received{background:var(--green-bg);color:var(--green)}
+td.act{white-space:nowrap}
+td.act .done{font-size:14px;color:var(--muted);display:block;margin-top:6px}
+td.act .done button{margin-right:4px}
+td input.remark{width:100%;min-width:180px;border-color:transparent;background:transparent;padding:6px 4px}
+td input.remark:hover,td input.remark:focus{border-color:var(--line);background:#fff}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:16px}
+.modal.show{display:flex}
+.box{background:#fff;border-radius:10px;padding:22px;width:min(520px,100%);max-height:92vh;overflow:auto}
+.box h2{margin:0 0 6px;font-size:20px}
+.box p{margin:0 0 14px;color:var(--muted);font-size:15px}
+.box label{display:block;font-size:14px;color:var(--muted);margin:10px 0 4px}
+.box input,.box select{width:100%}
+.box .row{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+.steps{background:var(--soft);border-radius:6px;padding:10px 14px 10px 28px;font-size:14px;line-height:1.6;margin:0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:6px;display:none;font-size:15px}
+.toast.show{display:block}
+.saving{opacity:.5;pointer-events:none}
+
+@media (max-width:760px){
+  header,.counts,.filters,main{padding-left:14px;padding-right:14px}
+  .count{min-width:0;flex:1}
+  thead{display:none}
+  table,tbody,tr,td{display:block;width:100%}
+  tr{border:1px solid var(--line);border-radius:8px;margin-bottom:10px;padding:6px 4px}
+  td{border:0;padding:6px 8px}
+  td.act{white-space:normal}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div><h1>Finance reports tracker</h1><div class="sub" id="sub">Connecting to your Google Sheet</div></div>
+  <div class="grow"></div>
+  <button id="btnAdd">Add a report</button>
+  <button id="btnRefresh">Refresh</button>
+  <button id="btnSetup">Setup</button>
+</header>
+
+<div class="note" id="note"></div>
+
+<div class="counts" id="counts">
+  <button class="count overdue" data-status="overdue"><b>0</b><span>Overdue</span></button>
+  <button class="count due" data-status="due"><b>0</b><span>Due today</span></button>
+  <button class="count upcoming" data-status="upcoming"><b>0</b><span>Coming up</span></button>
+  <button class="count received" data-status="received"><b>0</b><span>Received</span></button>
+</div>
+
+<div class="filters">
+  <label for="fOwner">Owner</label><select id="fOwner"><option value="">Everyone</option></select>
+  <label for="fRange">Due</label>
+  <select id="fRange"><option value="">Any date</option><option value="today">Today</option><option value="week">This week</option><option value="next">Next week</option><option value="custom">Pick dates</option></select>
+  <span id="customRange" style="display:none"><input type="date" id="fFrom"> <label>to</label> <input type="date" id="fTo"></span>
+  <input type="text" id="fSearch" placeholder="Search reports" style="flex:1;min-width:160px">
+  <button class="small" id="btnClear">Clear filters</button>
+</div>
+
+<main id="main"><div class="empty">Loading</div></main>
+
+<!-- Add report -->
+<div class="modal" id="addBox"><div class="box">
+  <h2>Add a report</h2>
+  <label for="aReport">What is the report called?</label><input id="aReport" placeholder="e.g. Weekly bank reconciliation">
+  <label for="aOwner">Who sends it?</label><input id="aOwner" placeholder="Name">
+  <label for="aFreq">How often?</label><select id="aFreq"><option>Weekly</option><option>Daily</option><option>Monthly</option><option>One Time</option></select>
+  <label for="aDay">Which day? (optional)</label><input id="aDay" placeholder="e.g. Friday">
+  <label for="aDue">First due date</label><input type="date" id="aDue">
+  <label for="aRemarks">Remarks (optional)</label><input id="aRemarks">
+  <div class="row"><button data-close>Cancel</button><button class="go" id="aSave">Add</button></div>
+</div></div>
+
+<!-- Setup -->
+<div class="modal" id="setupBox"><div class="box">
+  <h2>Connect to your Google Sheet</h2>
+  <p>Do this once. After that the page saves straight into the Sheet.</p>
+  <ol class="steps">
+    <li>Open the Google Sheet, go to <b>Extensions &rarr; Apps Script</b>, paste in <b>Code.gs</b>, save.</li>
+    <li>Click <b>Deploy &rarr; New deployment &rarr; Web app</b>. Execute as: <b>Me</b>. Who has access: <b>Anyone</b>. Deploy.</li>
+    <li>Copy the <b>Web app URL</b> and paste it below.</li>
+  </ol>
+  <label for="sUrl">Web app URL</label><input id="sUrl" placeholder="https://script.google.com/macros/s/.../exec">
+  <label for="sName">Your name (shown on the Sheet as "Updated by")</label><input id="sName" placeholder="e.g. Nikita">
+  <label for="sPass">Passcode (only if one was set in Code.gs)</label><input id="sPass" type="password">
+  <div class="row"><button data-close>Cancel</button><button class="go" id="sSave">Connect</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script id="sample" type="application/json">[{"ID": "FIN-1", "Report": "Prepaid card report", "Owner": "Ashish Sharma", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "", "Remarks": "No submission on the email thread as on 15-Sep-2026."}, {"ID": "FIN-2", "Report": "Accounts receivable", "Owner": "Aslam Khan", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "", "Remarks": "No submission on the email thread as on 15-Sep-2026."}, {"ID": "FIN-3", "Report": "Forex Card report", "Owner": "Brijesh Chourasiya", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "", "Remarks": "No submission on the email thread as on 15-Sep-2026."}, {"ID": "FIN-4", "Report": "Weekly Bank reconciliation", "Owner": "Brijesh Chourasiya", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "", "Remarks": "No submission on the email thread as on 15-Sep-2026. Required on email by Friday EOD."}, {"ID": "FIN-5", "Report": "Weekly payment report (last Friday to Thursday)", "Owner": "Brijesh Chourasiya", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "", "Remarks": "No submission on the email thread as on 15-Sep-2026. Covers payments made last Friday to Thursday; due by Friday EOD."}, {"ID": "FIN-6", "Report": "Employee Loan & advances (Salary related)", "Owner": "Rohit Jha", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "2026-09-11", "Remarks": "Received on email 11-Sep-2026 17:18. Draft shared 9-Sep-2026 (data as of 8-Sep). Rohit asked whether the format needs additional detail - no reply on thread."}, {"ID": "FIN-7", "Report": "Employee Loan & advances (Official Work / Staff Reimbursement)", "Owner": "Rohit Jha", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "2026-09-11", "Remarks": "Received on email 11-Sep-2026 17:18. Draft shared 9-Sep-2026 (data as of 8-Sep)."}, {"ID": "FIN-8", "Report": "Vendor Ageing report", "Owner": "Vivek Srivastava", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "", "Remarks": "No submission on the email thread as on 15-Sep-2026."}, {"ID": "FIN-9", "Report": "Vendor Cleanup & Sync name with Orbit", "Owner": "Vivek Srivastava", "Frequency": "Weekly", "Due day": "Friday", "Due date": "2026-09-11", "Received on": "", "Remarks": "No submission on the email thread as on 15-Sep-2026."}, {"ID": "FIN-10", "Report": "Master Revenue sheet - cohort wise, student wise + Forecast", "Owner": "Akshita Goyal", "Frequency": "Weekly", "Due day": "Wednesday", "Due date": "2026-09-16", "Received on": "", "Remarks": "Discuss issues with Ravi."}, {"ID": "FIN-11", "Report": "AR aging tracker", "Owner": "Akshita Goyal", "Frequency": "Weekly", "Due day": "Wednesday", "Due date": "2026-09-16", "Received on": "", "Remarks": "Discuss issues with Ravi."}, {"ID": "FIN-12", "Report": "Prepaid sheet", "Owner": "Rohit Jha", "Frequency": "Weekly", "Due day": "Wednesday", "Due date": "2026-09-16", "Received on": "", "Remarks": "Discuss issues with Sameer."}, {"ID": "FIN-13", "Report": "Daily collection report", "Owner": "Aslam Khan / Karan", "Frequency": "Daily", "Due day": "Every working day", "Due date": "2026-09-15", "Received on": "", "Remarks": "Joint ownership Aslam/Karan."}, {"ID": "FIN-14", "Report": "Security refunds tracking", "Owner": "Rohit Jha", "Frequency": "Weekly", "Due day": "Wednesday", "Due date": "2026-09-16", "Received on": "", "Remarks": "Discuss issues with Sameer."}, {"ID": "FIN-15", "Report": "Expense provision sheet - department wise", "Owner": "Sameer", "Frequency": "Weekly", "Due day": "Tuesday", "Due date": "2026-09-15", "Received on": "", "Remarks": ""}, {"ID": "FIN-16", "Report": "Master rentals sheet - office, campus, hostels", "Owner": "Vivek Srivastava", "Frequency": "Weekly", "Due day": "Tuesday", "Due date": "2026-09-15", "Received on": "", "Remarks": "Discuss issues with Sameer."}, {"ID": "FIN-17", "Report": "AP aging", "Owner": "Vivek Srivastava", "Frequency": "Weekly", "Due day": "Thursday", "Due date": "2026-09-17", "Received on": "", "Remarks": "Discuss issues with Sameer."}, {"ID": "FIN-18", "Report": "Vendor advance aging", "Owner": "Vivek Srivastava", "Frequency": "Weekly", "Due day": "Thursday", "Due date": "2026-09-17", "Received on": "", "Remarks": "Discuss issues with Sameer."}, {"ID": "FIN-19", "Report": "Monthly cashflow tracker - inflow / outflow", "Owner": "Sameer", "Frequency": "Monthly", "Due day": "16th of month", "Due date": "2026-09-16", "Received on": "", "Remarks": ""}, {"ID": "FIN-20", "Report": "Fixed expense tracker", "Owner": "Vivek Srivastava", "Frequency": "Weekly", "Due day": "Wednesday", "Due date": "2026-09-16", "Received on": "", "Remarks": "Discuss issues with Sameer."}, {"ID": "FIN-21", "Report": "Team KRAs", "Owner": "Sameer", "Frequency": "One Time", "Due day": "", "Due date": "2026-09-15", "Received on": "", "Remarks": "One-time deliverable."}]</script>
+<script>
+// If you want to skip the Setup step for everyone, paste the Web app URL here:
+var SCRIPT_URL = '';
+
+var $ = function(s){ return document.querySelector(s); };
+var cfg = {url:'', name:'', pass:''};
+try { cfg = Object.assign(cfg, JSON.parse(localStorage.getItem('tracker.cfg') || '{}')); } catch(e){}
+if(SCRIPT_URL && !cfg.url) cfg.url = SCRIPT_URL;
+var rows = [], demo = false, filters = {status:'', owner:'', range:'', from:'', to:'', q:''};
+var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function today(){ return iso(new Date()); }
+function parse(s){ var p=s.split('-'); return new Date(+p[0],+p[1]-1,+p[2]); }
+function addDays(s,n){ var d=parse(s); d.setDate(d.getDate()+n); return iso(d); }
+function nice(s){ if(!s) return ''; var d=parse(s); return DOW[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()]; }
+function statusOf(r){ if(r['Received on']) return 'received'; var t=today(); if(r['Due date']<t) return 'overdue'; if(r['Due date']===t) return 'due'; return 'upcoming'; }
+var LABEL = {overdue:'Overdue', due:'Due today', upcoming:'Coming up', received:'Received'};
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function toast(t){ var e=$('#toast'); e.textContent=t; e.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(function(){e.classList.remove('show');},2500); }
+function setNote(t){ var n=$('#note'); n.textContent=t||''; n.classList.toggle('show', !!t); }
+
+// ---------- talk to the Sheet ----------
+async function loadRows(){
+  if(!cfg.url){
+    rows = JSON.parse($('#sample').textContent); demo = true;
+    $('#sub').textContent = 'Sample data'; setNote('This is sample data. Click Setup to connect the page to your Google Sheet.');
+    render(); return;
+  }
+  $('#sub').textContent = 'Loading from Google Sheet';
+  try{
+    var r = await fetch(cfg.url + '?t=' + Date.now());
+    var j = await r.json();
+    if(!j.ok) throw new Error(j.error || 'Sheet did not respond');
+    rows = j.rows; demo = false; setNote('');
+    $('#sub').textContent = 'Synced with Google Sheet at ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    render();
+  }catch(e){
+    $('#sub').textContent = 'Could not reach the Sheet';
+    setNote('Could not load from the Google Sheet (' + e.message + '). Check the Web app URL in Setup, then press Refresh.');
+  }
+}
+async function send(req){
+  if(demo){ toast('Connect your Google Sheet first (Setup)'); $('#btnSetup').click(); return false; }
+  req.who = cfg.name || 'unknown'; req.passcode = cfg.pass || '';
+  $('#main').classList.add('saving');
+  try{
+    var r = await fetch(cfg.url, {method:'POST', body: JSON.stringify(req)});
+    var j = await r.json();
+    if(!j.ok) throw new Error(j.error || 'Save failed');
+    rows = j.rows; render();
+    $('#sub').textContent = 'Saved to Google Sheet at ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    return true;
+  }catch(e){ toast('Not saved: ' + e.message); return false; }
+  finally{ $('#main').classList.remove('saving'); }
+}
+
+// ---------- draw ----------
+function visible(){
+  var t = today(), q = filters.q.toLowerCase();
+  var from = '', to = '';
+  if(filters.range==='today'){ from = to = t; }
+  else if(filters.range==='week'){ var d=new Date(); var mon=addDays(t, -((d.getDay()+6)%7)); from=mon; to=addDays(mon,6); }
+  else if(filters.range==='next'){ var d2=new Date(); var mon2=addDays(t, 7-((d2.getDay()+6)%7)); from=mon2; to=addDays(mon2,6); }
+  else if(filters.range==='custom'){ from=filters.from; to=filters.to; }
+  return rows.filter(function(r){
+    if(filters.status && statusOf(r)!==filters.status) return false;
+    if(filters.owner && r.Owner.indexOf(filters.owner)<0) return false;
+    if(from && r['Due date']<from) return false;
+    if(to && r['Due date']>to) return false;
+    if(q && (r.Report+' '+r.Owner+' '+r.ID+' '+r.Remarks).toLowerCase().indexOf(q)<0) return false;
+    return true;
+  }).sort(function(a,b){ return a['Due date']<b['Due date']?-1:a['Due date']>b['Due date']?1:0; });
+}
+
+function render(){
+  var c={overdue:0,due:0,upcoming:0,received:0};
+  rows.forEach(function(r){ c[statusOf(r)]++; });
+  document.querySelectorAll('.count').forEach(function(b){ b.querySelector('b').textContent=c[b.dataset.status]; b.classList.toggle('on', filters.status===b.dataset.status); });
+
+  var sel=$('#fOwner'), cur=sel.value, names={};
+  rows.forEach(function(r){ r.Owner.split('/').forEach(function(n){ n=n.trim(); if(n) names[n]=1; }); });
+  sel.innerHTML='<option value="">Everyone</option>'+Object.keys(names).sort().map(function(n){return '<option>'+esc(n)+'</option>';}).join('');
+  sel.value=cur;
+
+  var list=visible();
+  if(!list.length){ $('#main').innerHTML='<div class="empty">Nothing here. Try clearing the filters.</div>'; return; }
+  $('#main').innerHTML='<table><thead><tr><th>Report</th><th>Owner</th><th>Due</th><th>Status</th><th>Action</th><th>Remarks</th></tr></thead><tbody>'+
+    list.map(function(r){
+      var st=statusOf(r);
+      var when=esc(r.Frequency)+(r['Due day']?' · '+esc(r['Due day']):'');
+      var action = st==='received'
+        ? '<span class="chip received">Received '+nice(r['Received on'])+'</span><span class="done">'+
+          '<button class="small" data-act="undo" data-id="'+esc(r.ID)+'">Undo</button>'+
+          (r.Frequency!=='One Time'?'<button class="small" data-act="next" data-id="'+esc(r.ID)+'">Move to next '+(r.Frequency==='Daily'?'day':r.Frequency==='Monthly'?'month':'week')+'</button>':'')+'</span>'
+        : '<button class="go small" data-act="receive" data-id="'+esc(r.ID)+'">Mark received</button>';
+      return '<tr><td><div class="title">'+esc(r.Report)+'</div><div class="id">'+esc(r.ID)+' · '+when+'</div></td>'+
+        '<td>'+esc(r.Owner)+'</td><td>'+nice(r['Due date'])+'</td><td><span class="chip '+st+'">'+LABEL[st]+'</span></td>'+
+        '<td class="act">'+action+'</td>'+
+        '<td><input class="remark" data-id="'+esc(r.ID)+'" value="'+esc(r.Remarks)+'" placeholder="Add a remark"></td></tr>';
+    }).join('')+'</tbody></table>';
+}
+
+// ---------- clicks ----------
+document.addEventListener('click', function(e){
+  var b=e.target.closest('[data-act]');
+  if(b){
+    var id=b.dataset.id, a=b.dataset.act;
+    if(a==='receive') send({action:'update', id:id, field:'Received on', value:today()}).then(function(ok){ if(ok) toast('Marked received'); });
+    if(a==='undo') send({action:'update', id:id, field:'Received on', value:''});
+    if(a==='next') send({action:'next', id:id}).then(function(ok){ if(ok) toast('Moved to the next cycle'); });
+    return;
+  }
+  var cnt=e.target.closest('.count'); if(cnt){ filters.status = filters.status===cnt.dataset.status?'':cnt.dataset.status; render(); return; }
+  if(e.target.closest('[data-close]')){ e.target.closest('.modal').classList.remove('show'); }
+});
+document.addEventListener('change', function(e){
+  var el=e.target;
+  if(el.classList.contains('remark')){ send({action:'update', id:el.dataset.id, field:'Remarks', value:el.value}); return; }
+  if(el.id==='fOwner'){ filters.owner=el.value; render(); }
+  if(el.id==='fRange'){ filters.range=el.value; $('#customRange').style.display = el.value==='custom'?'inline':'none'; render(); }
+  if(el.id==='fFrom'){ filters.from=el.value; render(); }
+  if(el.id==='fTo'){ filters.to=el.value; render(); }
+});
+document.addEventListener('keydown', function(e){ if(e.key==='Enter' && e.target.classList.contains('remark')) e.target.blur(); if(e.key==='Escape') document.querySelectorAll('.modal').forEach(function(m){m.classList.remove('show');}); });
+$('#fSearch').addEventListener('input', function(e){ filters.q=e.target.value; render(); });
+$('#btnClear').addEventListener('click', function(){ filters={status:'',owner:'',range:'',from:'',to:'',q:''}; $('#fOwner').value=''; $('#fRange').value=''; $('#fFrom').value=''; $('#fTo').value=''; $('#fSearch').value=''; $('#customRange').style.display='none'; render(); });
+$('#btnRefresh').addEventListener('click', loadRows);
+
+$('#btnAdd').addEventListener('click', function(){ $('#aDue').value=today(); $('#addBox').classList.add('show'); $('#aReport').focus(); });
+$('#aSave').addEventListener('click', function(){
+  if(!$('#aReport').value.trim()){ toast('Give the report a name'); return; }
+  send({action:'add', report:$('#aReport').value.trim(), owner:$('#aOwner').value.trim(), frequency:$('#aFreq').value, dueDay:$('#aDay').value.trim(), dueDate:$('#aDue').value||today(), remarks:$('#aRemarks').value.trim()})
+    .then(function(ok){ if(ok){ $('#addBox').classList.remove('show'); ['aReport','aOwner','aDay','aRemarks'].forEach(function(i){$('#'+i).value='';}); toast('Added'); } });
+});
+
+$('#btnSetup').addEventListener('click', function(){ $('#sUrl').value=cfg.url; $('#sName').value=cfg.name; $('#sPass').value=cfg.pass; $('#setupBox').classList.add('show'); });
+$('#sSave').addEventListener('click', function(){
+  cfg={url:$('#sUrl').value.trim(), name:$('#sName').value.trim(), pass:$('#sPass').value.trim()};
+  try{ localStorage.setItem('tracker.cfg', JSON.stringify(cfg)); }catch(e){}
+  $('#setupBox').classList.remove('show'); loadRows();
+});
+
+loadRows();
+setInterval(function(){ if(!demo && !document.querySelector('.modal.show')) loadRows(); }, 90000);
+</script>
+</body>
+</html>
