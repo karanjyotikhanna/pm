@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!--HEAD-->
+<title>MU Finance Deliverables</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one working column — header, view tabs, status strip, register of deliverables; a side sheet opens for one item. */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --sunk:#e9edf3; --line:#d5dbe4; --line-soft:#e4e8ee;
+  --ink:#141b26; --ink-2:#4a5568; --ink-3:#6f7b8c;
+  --accent:#2c49a8; --accent-ink:#ffffff; --accent-soft:#e3e9fb;
+  --ok:#1d7a4c; --ok-soft:#dff2e7; --warn:#9a6200; --warn-soft:#fcefd4;
+  --bad:#b4282e; --bad-soft:#fbe3e3; --ret:#8a3fb0; --ret-soft:#f1e5f8; --mute:#5b6676; --mute-soft:#e6e9ee;
+  --shadow:0 10px 30px rgba(20,27,38,.12);
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141c; --surface:#161d28; --sunk:#1d2532; --line:#2c3646; --line-soft:#232c3a;
+  --ink:#e8edf5; --ink-2:#b2bccb; --ink-3:#8793a6;
+  --accent:#8ea8ff; --accent-ink:#0f1626; --accent-soft:#232f52;
+  --ok:#5fd09a; --ok-soft:#173527; --warn:#f0b955; --warn-soft:#3a2d12;
+  --bad:#ff8a8a; --bad-soft:#3d1c1f; --ret:#d39af2; --ret-soft:#33213f; --mute:#a3adbd; --mute-soft:#252e3b;
+  --shadow:0 10px 30px rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141c; --surface:#161d28; --sunk:#1d2532; --line:#2c3646; --line-soft:#232c3a;
+  --ink:#e8edf5; --ink-2:#b2bccb; --ink-3:#8793a6;
+  --accent:#8ea8ff; --accent-ink:#0f1626; --accent-soft:#232f52;
+  --ok:#5fd09a; --ok-soft:#173527; --warn:#f0b955; --warn-soft:#3a2d12;
+  --bad:#ff8a8a; --bad-soft:#3d1c1f; --ret:#d39af2; --ret-soft:#33213f; --mute:#a3adbd; --mute-soft:#252e3b;
+  --shadow:0 10px 30px rgba(0,0,0,.5); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--f-body);-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* buttons & inputs */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:7px 12px;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.sm{padding:4px 9px;font-size:12px}
+label.f{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--ink-2)}
+.in{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:8px 10px;font-size:14px;font-weight:400;color:var(--ink)}
+textarea.in{min-height:72px;resize:vertical}
+.in:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+
+/* header */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.top{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.top .wrap{display:flex;align-items:center;gap:16px;padding-block:10px}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0;flex:1 1 auto}
+.brand b{font-size:16px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand span{font-size:12px;color:var(--ink-3);white-space:nowrap}
+.who{display:flex;align-items:center;gap:8px;flex:none}
+.who .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.role{font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--sunk);color:var(--ink-2)}
+.role.master{background:var(--accent);color:var(--accent-ink)}
+.demo{background:var(--warn-soft);color:var(--warn);font-size:12px;font-weight:600}
+.demo .wrap{padding-block:6px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* tabs */
+.tabs{display:flex;gap:2px;overflow-x:auto;margin-top:18px;border-bottom:1px solid var(--line)}
+.tab{border:0;background:none;padding:10px 14px;font-weight:600;color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap;display:flex;gap:8px;align-items:center}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.count{font-family:var(--f-mono);font-size:11px;background:var(--sunk);color:var(--ink-2);border-radius:10px;padding:1px 7px}
+.count.hot{background:var(--warn);color:var(--surface)}
+
+/* summary strip */
+.strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:16px}
+.strip button{background:var(--surface);border:0;text-align:left;padding:10px 14px;cursor:pointer;display:grid;gap:2px}
+.strip button[aria-pressed="true"]{background:var(--accent-soft)}
+.strip .n{font-family:var(--f-mono);font-size:22px;font-weight:500;line-height:1.1}
+.strip .l{font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:var(--ink-3);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+
+.bar{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.bar .in{width:auto}
+.bar .search{flex:1 1 240px;min-width:0}
+.bar .spacer{flex:1}
+
+/* register */
+.reg{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:40px}
+.row{display:grid;grid-template-columns:84px minmax(0,1fr) 190px 112px 44px 150px;gap:14px;align-items:center;padding:11px 14px;border-top:1px solid var(--line-soft);cursor:pointer}
+.row:first-child{border-top:0}
+.row:hover{background:var(--sunk)}
+.row.head{cursor:default;background:var(--sunk);font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:var(--ink-3);padding-block:8px}
+.code{font-family:var(--f-mono);font-size:12px;color:var(--ink-3)}
+.ttl{font-weight:600;line-height:1.3}
+.sub{font-size:12px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.flow{font-size:12px;color:var(--ink-2);line-height:1.35}
+.flow .arrow{color:var(--ink-3)}
+.due{font-family:var(--f-mono);font-size:12px;font-variant-numeric:tabular-nums}
+.due .late{color:var(--bad);font-weight:500;display:block}
+.pri{font-family:var(--f-mono);font-size:11px;font-weight:500;border:1px solid var(--line);border-radius:4px;padding:1px 5px;justify-self:start}
+.pri.P0{border-color:var(--bad);color:var(--bad)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;white-space:nowrap;justify-self:start}
+.s-open{background:var(--mute-soft);color:var(--mute)} .s-open .dot{background:var(--mute)}
+.s-overdue{background:var(--bad-soft);color:var(--bad)} .s-overdue .dot{background:var(--bad)}
+.s-submitted{background:var(--warn-soft);color:var(--warn)} .s-submitted .dot{background:var(--warn)}
+.s-returned{background:var(--ret-soft);color:var(--ret)} .s-returned .dot{background:var(--ret)}
+.s-completed{background:var(--ok-soft);color:var(--ok)} .s-completed .dot{background:var(--ok)}
+.s-on_hold,.s-closed{background:var(--sunk);color:var(--ink-3)} .s-on_hold .dot,.s-closed .dot{background:var(--ink-3)}
+.empty{padding:40px 16px;text-align:center;color:var(--ink-3)}
+.empty b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
+
+/* side sheet */
+.scrim{position:fixed;inset:0;background:rgba(10,14,20,.35);z-index:20}
+.sheet{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--surface);z-index:21;box-shadow:var(--shadow);display:flex;flex-direction:column;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
+.sheet header{display:flex;gap:10px;align-items:flex-start;padding:16px 20px;border-bottom:1px solid var(--line)}
+.sheet header h2{margin:2px 0 0;font-size:18px;line-height:1.3;text-wrap:balance}
+.sheet .body{overflow-y:auto;padding:16px 20px 28px;display:grid;gap:18px;align-content:start;grid-auto-rows:max-content;flex:1 1 auto;min-height:0}
+.x{margin-left:auto}
+.chain{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.chain > div{flex:1;padding:8px 12px;display:grid;gap:1px;min-width:0}
+.chain > div + div{border-left:1px solid var(--line)}
+.chain .k{font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--ink-3)}
+.chain .v{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chain .on{background:var(--accent-soft)}
+.chain .done{background:var(--ok-soft)}
+dl.kv{display:grid;grid-template-columns:120px minmax(0,1fr);gap:6px 12px;margin:0;font-size:13px}
+dl.kv dt{color:var(--ink-3)}
+dl.kv dd{margin:0;overflow-wrap:anywhere}
+.note{background:var(--sunk);border-radius:6px;padding:10px 12px;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}
+.note .meta{display:block;font-size:11px;color:var(--ink-3);margin-bottom:4px;white-space:normal}
+h3.sec{margin:0;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3)}
+.act{border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:10px}
+.act.checker{border-color:var(--warn);background:color-mix(in srgb,var(--warn-soft) 55%,var(--surface))}
+.act.maker{border-color:var(--accent);background:color-mix(in srgb,var(--accent-soft) 45%,var(--surface))}
+.act .t{font-weight:700}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.hist{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.hist li{display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px;font-size:13px}
+.hist li::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--line);margin-top:5px}
+.hist .when{font-family:var(--f-mono);font-size:11px;color:var(--ink-3)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.err{color:var(--bad);font-size:13px;font-weight:600}
+.chk{display:flex;gap:8px;align-items:center;font-size:13px}
+
+/* toast */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;z-index:40;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+.toast.bad{background:var(--bad);color:var(--surface)}
+
+/* login */
+.login{min-height:100vh;display:grid;place-items:center;padding-block:40px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:28px;width:min(400px,100%);display:grid;gap:14px;box-shadow:var(--shadow)}
+.card h1{margin:0;font-size:20px;letter-spacing:-.01em}
+.card p{margin:0;color:var(--ink-2)}
+.linkbtn{background:none;border:0;color:var(--accent);cursor:pointer;padding:0;font-weight:600;justify-self:start}
+
+/* people */
+.prow{grid-template-columns:minmax(0,1.2fr) minmax(0,1.4fr) minmax(0,1fr) 90px 70px}
+.prow.off{opacity:.55}
+
+@media (max-width:820px){
+  .strip{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .row{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}
+  .row.head{display:none}
+  .row .code{grid-column:1;grid-row:1}
+  .row .main{grid-column:1/-1;grid-row:2}
+  .row .flow{grid-column:1;grid-row:3}
+  .row .due{grid-column:2;grid-row:3;text-align:right}
+  .row .pri{grid-column:2;grid-row:1;justify-self:end}
+  .row .pill{grid-column:1/-1;grid-row:4}
+  .prow > *:nth-child(n+3){display:none}
+  .prow{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .brand span{display:none}
+  dl.kv{grid-template-columns:96px minmax(0,1fr)}
+}
+@media (max-width:420px){ .who .nm{display:none} .brand b{font-size:14px} .grid2{grid-template-columns:1fr} }
+@media (prefers-reduced-motion:no-preference){ .sheet{animation:slide .18s ease-out} @keyframes slide{from{transform:translateX(24px)}} }
+</style>
+<!--/HEAD-->
+</head>
+<body>
+<div id="app"></div>
+<!--SCRIPTS-->
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="demo-data.js"></script>
+<!--/SCRIPTS-->
+<script>
+"use strict";
+/* ============================================================================
+   MU Finance Deliverables — maker / checker register
+   Backend: Supabase (auth + Postgres with row-level security). All rules are
+   enforced in the database (supabase/schema.sql); this page only mirrors them
+   to decide which buttons to show.
+   Demo mode: when config.js has no Supabase URL, the app runs on in-memory
+   sample data with the same rules, and nothing is saved.
+   ========================================================================== */
+const CFG = window.MU_CONFIG || {};
+const DEMO = !CFG.supabaseUrl;
+const STATUS_LABEL = {open:"Open", overdue:"Overdue", submitted:"Awaiting approval", returned:"Returned", completed:"Completed", on_hold:"On hold", closed:"Closed"};
+const RECUR = ["Daily","Weekly","Fortnightly","Monthly","Quarterly"];
+const FREQS = ["One Time", ...RECUR];
+const CATS = ["Recurring report","Task","Ojasvi priority list","Banking & compliance","Approval / decision","Revision / feedback","Policy & SOP","Tax","Card Module"];
+
+/* ---------- utilities ---------- */
+const $ = (s, el=document) => el.querySelector(s);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const todayIST = () => new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date());
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function fmtDate(d){ if(!d) return ""; const [y,m,dd]=d.slice(0,10).split("-").map(Number); const cy=+todayIST().slice(0,4); return `${dd} ${MON[m-1]}${y!==cy?" "+String(y).slice(2):""}`; }
+function fmtWhen(ts){ if(!ts) return ""; const d=new Date(ts); const p=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Kolkata",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",hour12:false}).format(d); return p.replace(",", " ·"); }
+const daysBetween = (a,b) => Math.round((Date.parse(b)-Date.parse(a))/864e5);
+function addInterval(d, f){ const dt=new Date(d+"T00:00:00Z"); if(f==="Daily") dt.setUTCDate(dt.getUTCDate()+1); else if(f==="Weekly") dt.setUTCDate(dt.getUTCDate()+7); else if(f==="Fortnightly") dt.setUTCDate(dt.getUTCDate()+14); else if(f==="Monthly") dt.setUTCMonth(dt.getUTCMonth()+1); else if(f==="Quarterly") dt.setUTCMonth(dt.getUTCMonth()+3); return dt.toISOString().slice(0,10); }
+function nextDue(due, f){ if(!RECUR.includes(f)) return null; const t=todayIST(); let d=addInterval(due||t,f), n=0; while(d<=t && n++<1000) d=addInterval(d,f); return d; }
+const safeUrl = u => /^https?:\/\//i.test(u||"") ? u : null;
+function store(k,v){ try{ v===undefined ? localStorage.getItem(k) : localStorage.setItem(k,v); }catch(e){} }
+function load(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+
+/* ---------- state ---------- */
+const S = { me:null, people:[], tasks:[], byId:{}, view:load("mu.view")||"mine", filter:"active", q:"", owner:"", open:null, events:[], busy:false, recovery:false, ui:{} };
+
+/* ---------- permission mirror (the database is the authority) ---------- */
+const person = id => S.byId[id];
+const isAdmin = () => ["admin","master"].includes(S.me?.role);
+const isMaster = () => S.me?.role === "master";
+function isAbove(boss, pid){ let p=person(pid), n=0; while(p && p.manager_id && n++<25){ if(p.manager_id===boss) return true; p=person(p.manager_id); } return false; }
+const canManageOwner = owner => !!S.me && (isAdmin() || isAbove(S.me.id, owner));
+function canApprove(t){ if(!S.me || t.status!=="submitted") return false; const o=person(t.owner_id); if(!o) return false; if(!o.manager_id) return isMaster(); if(t.submitted_by===S.me.id || t.owner_id===S.me.id) return false; return o.manager_id===S.me.id || isMaster(); }
+function checkerName(t){ const o=person(t.owner_id); if(o?.manager_id && person(o.manager_id)) return person(o.manager_id).full_name; if(o?.role==="master") return "Self (top of chain)"; const m=S.people.find(p=>p.role==="master"&&p.active); return m ? m.full_name + " (Master)" : "Master"; }
+function displayStatus(t){ if((t.status==="open"||t.status==="returned") && t.due_date && t.due_date < todayIST()) return t.status==="returned" ? "returned" : "overdue"; return t.status; }
+const isLate = t => (t.status==="open"||t.status==="returned"||t.status==="submitted") && t.due_date && t.due_date < todayIST();
+
+/* ============================================================================
+   Backends
+   ========================================================================== */
+let sb = null;
+const API = DEMO ? demoApi() : supaApi();
+
+function supaApi(){
+  sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey, {auth:{persistSession:true, detectSessionInUrl:true, flowType:"implicit"}});
+  const unwrap = ({data, error}) => { if(error) throw new Error(error.message || "Something went wrong."); return data; };
+  return {
+    async session(){ const {data} = await sb.auth.getSession(); return data.session; },
+    onAuth(fn){ sb.auth.onAuthStateChange((ev, session) => fn(ev, session)); },
+    async signIn(email, password){ unwrap(await sb.auth.signInWithPassword({email:email.trim().toLowerCase(), password})); },
+    async signOut(){ await sb.auth.signOut(); },
+    async sendReset(email){ unwrap(await sb.auth.resetPasswordForEmail(email.trim().toLowerCase(), {redirectTo: location.origin + location.pathname})); },
+    async setPassword(pw){ unwrap(await sb.auth.updateUser({password: pw})); },
+    async loadAll(){
+      const [people, tasks] = await Promise.all([
+        sb.from("people").select("*").order("full_name").then(unwrap),
+        sb.from("tasks").select("*").order("id").limit(5000).then(unwrap)]);
+      const {data:{user}} = await sb.auth.getUser();
+      const me = people.find(p => p.email === (user?.email||"").toLowerCase() && p.active) || null;
+      return {people, tasks, me};
+    },
+    async events(taskId){ return unwrap(await sb.from("task_events").select("*").eq("task_id", taskId).order("id")); },
+    async rpc(fn, args){ return unwrap(await sb.rpc(fn, args)); },
+  };
+}
+
+function demoApi(){
+  const seed = window.MU_SEED || {people:[], tasks:[], events:[]};
+  const db = JSON.parse(JSON.stringify(seed));
+  let meId = null, evId = 1, auth = () => {};
+  db.events.forEach(e => e.id = evId++);
+  const P = id => db.people.find(p => p.id === id);
+  const me = () => P(meId);
+  const role = () => me()?.role;
+  const above = (boss, pid) => { let p=P(pid), n=0; while(p && p.manager_id && n++<25){ if(p.manager_id===boss) return true; p=P(p.manager_id);} return false; };
+  const admin = () => ["admin","master"].includes(role());
+  const canSee = o => !!me() && (o===meId || admin() || above(meId,o));
+  const canMgr = o => !!me() && (admin() || above(meId,o));
+  const fail = m => { throw new Error(m); };
+  const now = () => new Date().toISOString();
+  const log = (task_id, action, from_status, to_status, note, link) => db.events.push({id:evId++, task_id, actor_id:meId, action, from_status, to_status, note:(note||"").trim()||null, link:(link||"").trim()||null, created_at:now()});
+  const lock = id => { if(!me()) fail("Your login is not linked to an active team member."); const t=db.tasks.find(x=>x.id===id); if(!t || !canSee(t.owner_id)) fail("Deliverable not found."); return t; };
+  const approver = t => { const o=P(t.owner_id); if(!o.manager_id) return role()==="master"; if(t.submitted_by===meId || t.owner_id===meId) return false; return o.manager_id===meId || role()==="master"; };
+  const blank = v => (v==null || String(v).trim()==="") ? null : String(v).trim();
+  const fns = {
+    submit_task({p_id,p_note,p_link}){ const t=lock(p_id), old=t.status; if(t.owner_id!==meId) fail("Only the owner can submit this deliverable."); if(!["open","returned"].includes(t.status)) fail(`This deliverable cannot be submitted while it is ${t.status}.`);
+      Object.assign(t,{status:"submitted",submitted_at:now(),submitted_by:meId,submission_note:blank(p_note),submission_link:blank(p_link),reviewed_at:null,reviewed_by:null,review_note:null,updated_at:now()}); log(p_id,"submitted",old,"submitted",p_note,p_link); return t; },
+    withdraw_submission({p_id}){ const t=lock(p_id); if(t.owner_id!==meId) fail("Only the owner can withdraw a submission."); if(t.status!=="submitted") fail("Nothing to withdraw.");
+      Object.assign(t,{status:"open",submitted_at:null,submitted_by:null,submission_note:null,submission_link:null,updated_at:now()}); log(p_id,"withdrawn","submitted","open"); return t; },
+    add_update({p_id,p_note}){ const t=lock(p_id); if(!blank(p_note)) fail("Please write the update."); if(t.owner_id!==meId && !canMgr(t.owner_id)) fail("You cannot post updates on this deliverable.");
+      t.latest_update=blank(p_note); t.updated_at=now(); log(p_id,"update",t.status,t.status,p_note); return t; },
+    approve_task({p_id,p_note,p_next_cycle}){ const t=lock(p_id); if(t.status!=="submitted") fail("Only submitted deliverables can be approved."); if(!approver(t)) fail("You are not the approver for this deliverable.");
+      const self=t.owner_id===meId; Object.assign(t,{status:"completed",reviewed_at:now(),reviewed_by:meId,review_note:blank(p_note),completed_on:todayIST(),updated_at:now()});
+      log(p_id, self?"approved (self, top of chain)":"approved","submitted","completed",p_note);
+      if(p_next_cycle && t.frequency!=="One Time"){ const id=Math.max(...db.tasks.map(x=>x.id))+1;
+        db.tasks.push({...t,id,status:"open",raised_on:todayIST(),due_date:nextDue(t.due_date,t.frequency),latest_update:null,submitted_at:null,submitted_by:null,submission_note:null,submission_link:null,reviewed_at:null,reviewed_by:null,review_note:null,completed_on:null,previous_id:t.id,created_by:meId,created_at:now(),updated_at:now()});
+        log(id,"next cycle created",null,"open","Rolled over after approval of #"+t.id); }
+      return t; },
+    return_task({p_id,p_note}){ const t=lock(p_id); if(t.status!=="submitted") fail("Only submitted deliverables can be returned."); if(!approver(t)) fail("You are not the approver for this deliverable."); if(!blank(p_note)) fail("Please say what needs to change.");
+      Object.assign(t,{status:"returned",reviewed_at:now(),reviewed_by:meId,review_note:blank(p_note),updated_at:now()}); log(p_id,"returned","submitted","returned",p_note); return t; },
+    set_task_status({p_id,p_status,p_note}){ const t=lock(p_id), old=t.status; if(!["open","on_hold","closed","completed"].includes(p_status)) fail("Invalid status.");
+      if(p_status==="completed"){ if(role()!=="master") fail("Only the Master can mark a deliverable completed directly."); } else if(!canMgr(t.owner_id)) fail("You cannot change the status of this deliverable.");
+      if(old===p_status) return t; if(!blank(p_note) && ["closed","completed"].includes(p_status)) fail("Please add a note explaining why.");
+      t.status=p_status; if(p_status==="completed"){ Object.assign(t,{completed_on:todayIST(),reviewed_at:now(),reviewed_by:meId,review_note:blank(p_note)}); } if(p_status==="open") t.completed_on=null; t.updated_at=now();
+      log(p_id,{open:"reopened",on_hold:"put on hold",closed:"closed",completed:"completed by master"}[p_status],old,p_status,p_note); return t; },
+    save_task({p}){ if(!me()) fail("Your login is not linked to an active team member."); const o=blank(p.owner_id); if(!o) fail("Choose an owner."); if(!P(o)?.active) fail("Owner not found."); if(!canMgr(o)) fail("You can only assign deliverables to people who report to you."); if(!blank(p.title)) fail("Give the deliverable a title.");
+      const fields={code:blank(p.code),owner_id:o,title:blank(p.title),category:blank(p.category),priority:blank(p.priority),frequency:blank(p.frequency)||"One Time",due_day:blank(p.due_day),due_date:blank(p.due_date),support:blank(p.support),next_step:blank(p.next_step),source:blank(p.source),source_ref:blank(p.source_ref)};
+      if(!p.id){ const id=Math.max(0,...db.tasks.map(x=>x.id))+1; const t={id,...fields,raised_on:blank(p.raised_on)||todayIST(),source:fields.source||"App",status:"open",latest_update:null,submitted_at:null,submitted_by:null,submission_note:null,submission_link:null,reviewed_at:null,reviewed_by:null,review_note:null,completed_on:null,previous_id:null,created_by:meId,created_at:now(),updated_at:now()}; db.tasks.push(t); log(id,"created",null,"open"); return t; }
+      const t=lock(Number(p.id)); if(!canMgr(t.owner_id)) fail("You cannot edit this deliverable.");
+      const ch=[]; if(t.owner_id!==o) ch.push("owner changed"); if((t.due_date||null)!==fields.due_date) ch.push(`due ${t.due_date?fmtDate(t.due_date):"none"} → ${fields.due_date?fmtDate(fields.due_date):"none"}`); if(t.title!==fields.title) ch.push("title edited"); if((t.priority||null)!==fields.priority) ch.push("priority "+(fields.priority||"none"));
+      Object.assign(t,fields,{raised_on:blank(p.raised_on),updated_at:now()}); log(t.id,"edited",t.status,t.status,ch.join("; ")); return t; },
+    save_person({p}){ if(!admin()) fail("Only admins can manage people."); const r=blank(p.role)||"member"; if(r==="master" && role()!=="master") fail("Only the Master can grant Master rights."); const mgr=blank(p.manager_id); const email=(p.email||"").trim().toLowerCase(); if(!email.includes("@")) fail("Enter a valid email."); if(!blank(p.full_name)) fail("Enter a name.");
+      if(p.id){ const x=P(p.id); if(x.role==="master" && role()!=="master") fail("Only the Master can edit a Master."); const active=p.active!==false;
+        if(x.role==="master" && (r!=="master"||!active) && db.people.filter(q=>q.role==="master"&&q.active).length===1) fail("There must always be at least one active Master.");
+        if(mgr && (mgr===p.id || above(p.id,mgr))) fail("That reporting line would create a loop.");
+        if(db.people.some(q=>q.email===email && q.id!==p.id)) fail("That email is already in use.");
+        Object.assign(x,{full_name:p.full_name.trim(),email,manager_id:mgr,role:r,area:blank(p.area),active}); return x; }
+      if(db.people.some(q=>q.email===email)) fail("That email is already in use.");
+      const x={id:"demo-"+Math.random().toString(36).slice(2),full_name:p.full_name.trim(),email,manager_id:mgr,role:r,area:blank(p.area),active:true}; db.people.push(x); return x; },
+  };
+  return {
+    demo:true,
+    async session(){ return meId ? {user:{email:me().email}} : null; },
+    onAuth(fn){ auth = fn; },
+    async signInAs(id){ meId = id; auth("SIGNED_IN"); },
+    async signOut(){ meId = null; auth("SIGNED_OUT"); },
+    async loadAll(){ const m=me(); if(!m||!m.active) return {people:[],tasks:[],me:null}; return {people:JSON.parse(JSON.stringify(db.people)), tasks:JSON.parse(JSON.stringify(db.tasks.filter(t=>canSee(t.owner_id)))), me:{...m}}; },
+    async events(id){ return JSON.parse(JSON.stringify(db.events.filter(e=>e.task_id===id))); },
+    async rpc(fn, args){ await new Promise(r=>setTimeout(r,120)); return JSON.parse(JSON.stringify(fns[fn](args))); },
+    people: () => db.people,
+  };
+}
+
+/* ============================================================================
+   Rendering
+   ========================================================================== */
+const app = $("#app");
+let toastTimer;
+function toast(msg, bad){ let el=$(".toast"); if(!el){ el=document.createElement("div"); document.body.appendChild(el); } el.className="toast"+(bad?" bad":""); el.textContent=msg; el.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.hidden=true, bad?6000:3000); }
+
+function renderLogin(msg){
+  if(API.demo){
+    const ppl = [...API.people()].filter(p=>p.active).sort((a,b)=>a.full_name.localeCompare(b.full_name));
+    app.innerHTML = `<div class="wrap login"><form class="card" id="loginForm">
+      <h1>MU Finance Deliverables</h1>
+      <p>Demo with sample data. Pick a team member to see the app through their eyes. Changes are not saved.</p>
+      <label class="f">Sign in as<select class="in" id="demoWho">${ppl.map(p=>`<option value="${esc(p.id)}">${esc(p.full_name)}${p.role!=="member"?` — ${p.role}`:""}</option>`).join("")}</select></label>
+      <button class="btn primary" type="submit">Open the app</button></form></div>`;
+    $("#loginForm").onsubmit = e => { e.preventDefault(); API.signInAs($("#demoWho").value); };
+    return;
+  }
+  app.innerHTML = `<div class="wrap login"><form class="card" id="loginForm" autocomplete="on">
+    <h1>MU Finance Deliverables</h1>
+    <p>Sign in with your Masters' Union email.</p>
+    <label class="f">Email<input class="in" id="email" type="email" autocomplete="username" required value="${esc(load("mu.email")||"")}"></label>
+    <label class="f">Password<input class="in" id="pw" type="password" autocomplete="current-password" required></label>
+    <div class="err" id="loginErr">${esc(msg||"")}</div>
+    <button class="btn primary" type="submit" id="loginBtn">Sign in</button>
+    <button class="linkbtn" type="button" id="forgot">Forgot password?</button></form></div>`;
+  $("#loginForm").onsubmit = async e => { e.preventDefault(); const b=$("#loginBtn"); b.disabled=true; $("#loginErr").textContent="";
+    try{ store("mu.email", $("#email").value.trim()); await API.signIn($("#email").value, $("#pw").value); }
+    catch(err){ $("#loginErr").textContent = /invalid login/i.test(err.message) ? "Email or password is incorrect." : err.message; b.disabled=false; } };
+  $("#forgot").onclick = async () => { const em=$("#email").value.trim(); if(!em){ $("#loginErr").textContent="Enter your email first, then tap Forgot password."; return; }
+    try{ await API.sendReset(em); $("#loginErr").textContent=""; toast("If that email is registered, a reset link is on its way."); }catch(err){ $("#loginErr").textContent=err.message; } };
+}
+
+function renderSetPassword(){
+  app.innerHTML = `<div class="wrap login"><form class="card" id="pwForm">
+    <h1>Set your password</h1><p>Choose a password of at least 8 characters.</p>
+    <label class="f">New password<input class="in" id="pw1" type="password" autocomplete="new-password" minlength="8" required></label>
+    <label class="f">Confirm password<input class="in" id="pw2" type="password" autocomplete="new-password" minlength="8" required></label>
+    <div class="err" id="pwErr"></div><button class="btn primary" type="submit">Save password</button></form></div>`;
+  $("#pwForm").onsubmit = async e => { e.preventDefault(); const a=$("#pw1").value, b=$("#pw2").value;
+    if(a.length<8) return $("#pwErr").textContent="Use at least 8 characters."; if(a!==b) return $("#pwErr").textContent="The two passwords don't match.";
+    try{ await API.setPassword(a); S.recovery=false; history.replaceState(null,"",location.pathname); toast("Password saved."); await refresh(); }catch(err){ $("#pwErr").textContent=err.message; } };
+}
+
+function renderNoAccess(email){
+  app.innerHTML = `<div class="wrap login"><div class="card"><h1>No access yet</h1>
+    <p>${esc(email||"This login")} is not on the finance team list, or has been deactivated. Ask Nikita or Karan to add you under People.</p>
+    <button class="btn" id="out">Sign out</button></div></div>`;
+  $("#out").onclick = () => API.signOut();
+}
+
+function viewsFor(){
+  const v = [{id:"mine", label:"My deliverables"}];
+  const approvals = S.tasks.filter(canApprove).length;
+  if(approvals || S.people.some(p=>p.manager_id===S.me.id) || isMaster()) v.push({id:"approve", label:"To approve", count:approvals, hot:approvals>0});
+  if(S.people.some(p=>isAbove(S.me.id,p.id)) && !isAdmin()) v.push({id:"team", label:"My team"});
+  if(isAdmin()) v.push({id:"all", label:"All deliverables"});
+  if(isAdmin()) v.push({id:"people", label:"People"});
+  return v;
+}
+function viewTasks(){
+  const me=S.me.id;
+  if(S.view==="mine") return S.tasks.filter(t=>t.owner_id===me);
+  if(S.view==="approve") return S.tasks.filter(canApprove);
+  if(S.view==="team") return S.tasks.filter(t=>t.owner_id!==me && isAbove(me,t.owner_id));
+  return S.tasks;
+}
+const FILTERS = [
+  {id:"active", label:"Open items", dot:"var(--accent)", test:t=>!["completed","closed"].includes(t.status)},
+  {id:"overdue", label:"Overdue", dot:"var(--bad)", test:t=>["open","returned"].includes(t.status) && isLate(t)},
+  {id:"submitted", label:"Awaiting approval", dot:"var(--warn)", test:t=>t.status==="submitted"},
+  {id:"returned", label:"Returned", dot:"var(--ret)", test:t=>t.status==="returned"},
+  {id:"on_hold", label:"On hold", dot:"var(--ink-3)", test:t=>t.status==="on_hold"},
+  {id:"completed", label:"Completed", dot:"var(--ok)", test:t=>t.status==="completed"||t.status==="closed"},
+];
+
+function renderShell(){
+  const views = viewsFor();
+  if(!views.some(v=>v.id===S.view)) S.view = views.some(v=>v.id==="approve") && S.tasks.some(canApprove) ? "approve" : "mine";
+  app.innerHTML = `
+  ${API.demo?`<div class="demo"><div class="wrap">Demo mode · sample data · nothing is saved <button class="btn sm" id="switch">Switch person</button></div></div>`:""}
+  <header class="top"><div class="wrap">
+    <div class="brand"><b>MU Finance Deliverables</b><span>Maker → Checker</span></div>
+    <div class="who"><span class="nm">${esc(S.me.full_name)}</span><span class="role ${esc(S.me.role)}">${S.me.role==="member"?"Team":esc(S.me.role)}</span>
+      ${API.demo?"":`<button class="btn sm ghost" id="chpw">Password</button>`}<button class="btn sm" id="out">Sign out</button></div>
+  </div></header>
+  <main class="wrap">
+    <nav class="tabs" role="tablist">${views.map(v=>`<button class="tab" role="tab" data-view="${v.id}" aria-selected="${S.view===v.id}">${esc(v.label)}${v.count!=null?`<span class="count ${v.hot?"hot":""}">${v.count}</span>`:""}</button>`).join("")}</nav>
+    <div id="pane"></div>
+  </main>`;
+  app.querySelectorAll(".tab").forEach(b => b.onclick = () => { S.view=b.dataset.view; store("mu.view",S.view); S.filter = S.view==="approve" ? "submitted" : "active"; S.owner=""; renderShell(); });
+  $("#out").onclick = () => API.signOut();
+  if($("#switch")) $("#switch").onclick = () => API.signOut();
+  if($("#chpw")) $("#chpw").onclick = () => openPasswordSheet();
+  if(S.view==="people") renderPeople(); else renderRegister();
+  if(S.open) renderSheet();
+}
+
+function renderRegister(){
+  const base = viewTasks();
+  const ownerIds = [...new Set(base.map(t=>t.owner_id))].sort((a,b)=>(person(a)?.full_name||"").localeCompare(person(b)?.full_name||""));
+  const showOwner = S.view!=="mine";
+  if(S.view==="approve" && !["submitted"].includes(S.filter)) S.filter="submitted";
+  const scoped = base.filter(t => !S.owner || t.owner_id===S.owner);
+  const f = FILTERS.find(x=>x.id===S.filter) || FILTERS[0];
+  const q = S.q.trim().toLowerCase();
+  const rows = scoped.filter(f.test).filter(t => !q || [t.code,t.title,t.category,t.latest_update,person(t.owner_id)?.full_name].join(" ").toLowerCase().includes(q))
+    .sort((a,b)=> (a.status==="submitted"?0:1)-(b.status==="submitted"?0:1) || (a.due_date||"9999").localeCompare(b.due_date||"9999") || (a.priority||"P9").localeCompare(b.priority||"P9") || a.id-b.id);
+  const canCreate = isAdmin() || S.people.some(p=>isAbove(S.me.id,p.id));
+  $("#pane").innerHTML = `
+    ${S.view==="approve"?"":`<div class="strip">${FILTERS.map(x=>`<button data-f="${x.id}" aria-pressed="${S.filter===x.id}"><span class="l"><i class="dot" style="background:${x.dot}"></i>${x.label}</span><span class="n">${scoped.filter(x.test).length}</span></button>`).join("")}</div>`}
+    <div class="bar">
+      <input class="in search" id="q" type="search" placeholder="Search code, title, update…" value="${esc(S.q)}" aria-label="Search">
+      ${showOwner?`<select class="in" id="ownerSel" aria-label="Owner"><option value="">Everyone</option>${ownerIds.map(id=>`<option value="${esc(id)}" ${S.owner===id?"selected":""}>${esc(person(id)?.full_name||"?")}</option>`).join("")}</select>`:""}
+      <span class="spacer"></span>
+      <button class="btn ghost" id="reload" title="Refresh">Refresh</button>
+      ${canCreate?`<button class="btn primary" id="newTask">New deliverable</button>`:""}
+    </div>
+    <div class="reg" role="table">
+      <div class="row head" role="row"><span>Code</span><span>Deliverable</span><span>Maker → Checker</span><span>Due</span><span>Pri</span><span>Status</span></div>
+      ${rows.length ? rows.map(rowHtml).join("") : `<div class="empty"><b>${S.view==="approve"?"Nothing waiting for your approval":"Nothing here"}</b>${S.view==="approve"?"When someone who reports to you submits a deliverable, it appears here.":"Try another status or clear the search."}</div>`}
+    </div>`;
+  $("#pane").querySelectorAll(".strip button").forEach(b=>b.onclick=()=>{ S.filter=b.dataset.f; renderRegister(); });
+  $("#q").oninput = e => { S.q=e.target.value; const pos=e.target.selectionStart; renderRegister(); const el=$("#q"); el.focus(); el.setSelectionRange(pos,pos); };
+  if($("#ownerSel")) $("#ownerSel").onchange = e => { S.owner=e.target.value; renderRegister(); };
+  $("#reload").onclick = () => refresh(true);
+  if($("#newTask")) $("#newTask").onclick = () => { S.open={kind:"edit", task:null}; renderSheet(); };
+  $("#pane").querySelectorAll(".row[data-id]").forEach(r => { r.onclick = () => openTask(+r.dataset.id); r.onkeydown = e => { if(e.key==="Enter") openTask(+r.dataset.id); }; });
+}
+
+function pill(t){ const s=displayStatus(t); return `<span class="pill s-${s}"><i class="dot"></i>${STATUS_LABEL[s]}</span>`; }
+function dueHtml(t){
+  if(t.status==="completed") return `<span class="due">Done ${fmtDate(t.completed_on)}</span>`;
+  if(!t.due_date) return `<span class="due" style="color:var(--ink-3)">No date</span>`;
+  const late = isLate(t) ? daysBetween(t.due_date, todayIST()) : 0;
+  return `<span class="due">${fmtDate(t.due_date)}${late?`<span class="late">${late} d late</span>`:""}</span>`;
+}
+function rowHtml(t){
+  const o=person(t.owner_id);
+  return `<div class="row" role="row" tabindex="0" data-id="${t.id}">
+    <span class="code">${esc(t.code||"#"+t.id)}</span>
+    <div class="main" style="min-width:0"><div class="ttl">${esc(t.title)}</div><div class="sub">${esc([t.frequency!=="One Time"?t.frequency:"", t.category].filter(Boolean).join(" · "))}${t.latest_update?` — ${esc(t.latest_update)}`:""}</div></div>
+    <span class="flow">${esc(o?.full_name||"?")} <span class="arrow">→</span> ${esc(checkerName(t))}</span>
+    ${dueHtml(t)}
+    ${t.priority?`<span class="pri ${t.priority}">${t.priority}</span>`:`<span></span>`}
+    ${pill(t)}
+  </div>`;
+}
+
+/* ---------- side sheet ---------- */
+async function openTask(id){ S.open={kind:"task", id}; S.events=[]; renderSheet(); try{ S.events = await API.events(id); if(S.open?.id===id) renderSheet(); }catch(e){} }
+function closeSheet(){ S.open=null; document.querySelectorAll(".scrim,.sheet").forEach(e=>e.remove()); }
+function sheetFrame(head, body){
+  document.querySelectorAll(".scrim,.sheet").forEach(e=>e.remove());
+  const scrim=document.createElement("div"); scrim.className="scrim"; scrim.onclick=closeSheet;
+  const sh=document.createElement("aside"); sh.className="sheet"; sh.setAttribute("role","dialog"); sh.setAttribute("aria-modal","true");
+  sh.innerHTML = `<header>${head}<button class="btn sm ghost x" id="closeSheet" aria-label="Close">Close</button></header><div class="body">${body}</div>`;
+  document.body.append(scrim, sh); $("#closeSheet").onclick = closeSheet; return sh;
+}
+document.addEventListener("keydown", e => { if(e.key==="Escape" && S.open) closeSheet(); });
+
+function renderSheet(){
+  if(!S.open) return;
+  if(S.open.kind==="edit") return renderEditSheet(S.open.task);
+  if(S.open.kind==="person") return renderPersonSheet(S.open.person);
+  if(S.open.kind==="password") return openPasswordSheet();
+  const t = S.tasks.find(x=>x.id===S.open.id); if(!t) return closeSheet();
+  const o = person(t.owner_id), mine = t.owner_id===S.me.id, appr = canApprove(t), mgr = canManageOwner(t.owner_id);
+  const stage = t.status==="completed" ? 2 : t.status==="submitted" ? 1 : 0;
+  const nd = nextDue(t.due_date, t.frequency);
+  let actions = "";
+  if(mine && ["open","returned"].includes(t.status)) actions += `<div class="act maker"><span class="t">${t.status==="returned"?"Resubmit for approval":"Submit for approval"}</span>
+      <label class="f">What are you submitting?<textarea class="in" id="subNote" placeholder="e.g. Shared on mail at 4:10 pm; covers 1–15 Oct"></textarea></label>
+      <label class="f">Link to the file (optional)<input class="in" id="subLink" type="url" placeholder="https://drive.google.com/…"></label>
+      <div class="btns"><button class="btn primary" data-do="submit">${checkerName(t).startsWith("Self")?"Submit":"Submit to "+esc(checkerName(t))}</button></div></div>`;
+  if(mine && t.status==="submitted") actions += `<div class="act maker"><span class="t">${checkerName(t).startsWith("Self")?"Submitted. Approve it below to complete.":"Waiting for "+esc(checkerName(t))}</span><div class="btns"><button class="btn" data-do="withdraw">Withdraw submission</button></div></div>`;
+  if(appr) actions += `<div class="act checker"><span class="t">Your review${t.owner_id===S.me.id?" (top of chain: self-approval is logged)":""}</span>
+      <label class="f">Comment<textarea class="in" id="revNote" placeholder="Required if you return it"></textarea></label>
+      ${RECUR.includes(t.frequency)?`<label class="chk"><input type="checkbox" id="nextCycle" checked> Open the next ${esc(t.frequency.toLowerCase())} cycle, due ${esc(fmtDate(nd))}</label>`:""}
+      <div class="btns"><button class="btn ok" data-do="approve">Approve and complete</button><button class="btn danger" data-do="return">Return for changes</button></div></div>`;
+  if((mine || mgr) && !["completed","closed"].includes(t.status)) actions += `<details class="act"><summary class="t" style="cursor:pointer">Post a progress update</summary>
+      <label class="f">Update<textarea class="in" id="updNote">${esc(t.latest_update||"")}</textarea></label><div class="btns"><button class="btn" data-do="update">Save update</button></div></details>`;
+  const adminBtns = [];
+  if(mgr){ adminBtns.push(`<button class="btn" data-do="edit">Edit / reassign</button>`);
+    if(["open","returned","submitted"].includes(t.status)) adminBtns.push(`<button class="btn" data-do="hold">Put on hold</button>`, `<button class="btn" data-do="close">Close (no longer needed)</button>`);
+    if(["on_hold","closed","completed"].includes(t.status)) adminBtns.push(`<button class="btn" data-do="reopen">Reopen</button>`); }
+  if(isMaster() && !["completed"].includes(t.status)) adminBtns.push(`<button class="btn" data-do="force">Mark completed (Master)</button>`);
+  if(adminBtns.length) actions += `<div class="act"><span class="t">Manage</span><label class="f">Note (needed to close or complete)<input class="in" id="admNote"></label><div class="btns">${adminBtns.join("")}</div></div>`;
+
+  const head = `<div style="min-width:0"><div class="code">${esc(t.code||"#"+t.id)} · ${pill(t)}</div><h2>${esc(t.title)}</h2></div>`;
+  const body = `
+    <div class="chain">
+      <div class="${stage===0?"on":""}"><span class="k">Maker</span><span class="v">${esc(o?.full_name)}</span></div>
+      <div class="${stage===1?"on":""}"><span class="k">Checker</span><span class="v">${esc(checkerName(t))}</span></div>
+      <div class="${stage===2?"done":""}"><span class="k">Completed</span><span class="v mono">${t.completed_on?fmtDate(t.completed_on):"—"}</span></div>
+    </div>
+    <div class="err" id="actErr" role="alert"></div>
+    ${actions}
+    ${t.status==="returned"&&t.review_note?`<div class="note"><span class="meta">Returned by ${esc(person(t.reviewed_by)?.full_name||"checker")}${t.reviewed_at?" · "+fmtWhen(t.reviewed_at):""}</span>${esc(t.review_note)}</div>`:""}
+    ${t.submission_note||t.submission_link?`<div class="note"><span class="meta">Submission${t.submitted_at?" · "+fmtWhen(t.submitted_at):""}</span>${esc(t.submission_note||"")}${safeUrl(t.submission_link)?`\n<a href="${esc(t.submission_link)}" target="_blank" rel="noopener">Open the file</a>`:""}</div>`:""}
+    ${t.status==="completed"&&t.review_note?`<div class="note"><span class="meta">Approval note${t.reviewed_by?" · "+esc(person(t.reviewed_by)?.full_name||""):""}</span>${esc(t.review_note)}</div>`:""}
+    <dl class="kv">
+      <dt>Due</dt><dd>${dueHtml(t)}</dd>
+      <dt>Frequency</dt><dd>${esc(t.frequency)}${t.due_day?" · "+esc(t.due_day):""}</dd>
+      ${t.priority?`<dt>Priority</dt><dd>${esc(t.priority)}</dd>`:""}
+      ${t.category?`<dt>Category</dt><dd>${esc(t.category)}</dd>`:""}
+      ${t.raised_on?`<dt>Raised on</dt><dd>${fmtDate(t.raised_on)}</dd>`:""}
+      ${t.support?`<dt>With / support</dt><dd>${esc(t.support)}</dd>`:""}
+      ${t.latest_update?`<dt>Latest update</dt><dd>${esc(t.latest_update)}</dd>`:""}
+      ${t.next_step?`<dt>Next step</dt><dd>${esc(t.next_step)}</dd>`:""}
+      ${t.source||t.source_ref?`<dt>Source</dt><dd>${esc([t.source,t.source_ref].filter(Boolean).join(" · "))}</dd>`:""}
+    </dl>
+    <div style="display:grid;gap:10px"><h3 class="sec">History</h3>
+      <ul class="hist">${S.events.length?S.events.slice().reverse().map(e=>`<li><div><b>${esc(e.action[0].toUpperCase()+e.action.slice(1))}</b>${e.actor_id?` · ${esc(person(e.actor_id)?.full_name||"")}`:""} <span class="when">${fmtWhen(e.created_at)}</span>${e.note?`<div style="color:var(--ink-2)">${esc(e.note)}</div>`:""}</div></li>`).join(""):`<li><div class="when">Loading…</div></li>`}</ul></div>`;
+  const sh = sheetFrame(head, body);
+  sh.querySelectorAll("[data-do]").forEach(b => b.onclick = () => act(t, b.dataset.do, b));
+}
+
+async function act(t, what, btn){
+  const v = id => ($("#"+id)?.value || "").trim();
+  const err = $("#actErr");
+  const calls = {
+    submit:   () => ["submit_task", {p_id:t.id, p_note:v("subNote"), p_link:v("subLink")}, "Submitted to "+checkerName(t)+"."],
+    withdraw: () => ["withdraw_submission", {p_id:t.id}, "Submission withdrawn."],
+    approve:  () => ["approve_task", {p_id:t.id, p_note:v("revNote"), p_next_cycle: !!$("#nextCycle")?.checked}, "Approved. Marked completed."],
+    return:   () => ["return_task", {p_id:t.id, p_note:v("revNote")}, "Returned to "+(person(t.owner_id)?.full_name||"the maker")+"."],
+    update:   () => ["add_update", {p_id:t.id, p_note:v("updNote")}, "Update saved."],
+    hold:     () => ["set_task_status", {p_id:t.id, p_status:"on_hold", p_note:v("admNote")}, "Put on hold."],
+    close:    () => ["set_task_status", {p_id:t.id, p_status:"closed", p_note:v("admNote")}, "Closed."],
+    reopen:   () => ["set_task_status", {p_id:t.id, p_status:"open", p_note:v("admNote")}, "Reopened."],
+    force:    () => ["set_task_status", {p_id:t.id, p_status:"completed", p_note:v("admNote")}, "Marked completed."],
+  };
+  if(what==="edit"){ S.open={kind:"edit", task:t}; return renderSheet(); }
+  if(what==="return" && !v("revNote")){ err.textContent="Write what needs to change before returning it."; $("#revNote").focus(); return; }
+  if((what==="close"||what==="force") && !v("admNote")){ err.textContent="Add a short note explaining why."; $("#admNote").focus(); return; }
+  const [fn, args, ok0] = calls[what](); const ok = ok0.replace("Submitted to Self (top of chain).","Submitted.");
+  btn.disabled = true; err.textContent = "";
+  try{ await API.rpc(fn, args); toast(ok); await refresh(); if(S.open?.kind==="task"){ S.events = await API.events(t.id); renderSheet(); } }
+  catch(e){ err.textContent = e.message; btn.disabled = false; }
+}
+
+function renderEditSheet(t){
+  const owners = S.people.filter(p=>p.active && canManageOwner(p.id)).sort((a,b)=>a.full_name.localeCompare(b.full_name));
+  const x = t || {frequency:"One Time"};
+  const opt = (arr, cur, blank) => (blank?`<option value="">—</option>`:"") + arr.map(a=>`<option ${a===cur?"selected":""}>${esc(a)}</option>`).join("");
+  const sh = sheetFrame(`<h2>${t?"Edit deliverable":"New deliverable"}</h2>`, `
+    <form id="taskForm" style="display:grid;gap:12px">
+      <label class="f">Title<input class="in" id="tf_title" required value="${esc(x.title||"")}"></label>
+      <div class="grid2">
+        <label class="f">Owner (maker)<select class="in" id="tf_owner" required><option value="">Choose…</option>${owners.map(p=>`<option value="${esc(p.id)}" ${p.id===x.owner_id?"selected":""}>${esc(p.full_name)}</option>`).join("")}</select></label>
+        <label class="f">Code<input class="in" id="tf_code" value="${esc(x.code||"")}" placeholder="e.g. FIN-90"></label>
+        <label class="f">Due date<input class="in" id="tf_due" type="date" value="${esc(x.due_date||"")}"></label>
+        <label class="f">Priority<select class="in" id="tf_pri">${opt(["P0","P1","P2"], x.priority, true)}</select></label>
+        <label class="f">Frequency<select class="in" id="tf_freq">${opt(FREQS, x.frequency)}</select></label>
+        <label class="f">Due day<input class="in" id="tf_dueday" value="${esc(x.due_day||"")}" placeholder="e.g. Friday"></label>
+        <label class="f">Category<select class="in" id="tf_cat">${opt(CATS, x.category, true)}</select></label>
+        <label class="f">Raised on<input class="in" id="tf_raised" type="date" value="${esc(x.raised_on||"")}"></label>
+      </div>
+      <label class="f">With / support<input class="in" id="tf_support" value="${esc(x.support||"")}"></label>
+      <label class="f">Next step / ask<textarea class="in" id="tf_next">${esc(x.next_step||"")}</textarea></label>
+      <div class="grid2"><label class="f">Source<input class="in" id="tf_src" value="${esc(x.source||"")}"></label><label class="f">Source reference<input class="in" id="tf_ref" value="${esc(x.source_ref||"")}"></label></div>
+      <p style="margin:0;font-size:12px;color:var(--ink-3)" id="tf_hint"></p>
+      <div class="err" id="tfErr" role="alert"></div>
+      <div class="btns"><button class="btn primary" type="submit">${t?"Save changes":"Create deliverable"}</button><button class="btn" type="button" id="tfCancel">Cancel</button></div>
+    </form>`);
+  const hint = () => { const o=person($("#tf_owner").value); $("#tf_hint").textContent = o ? `Submissions will go to ${o.manager_id&&person(o.manager_id)?person(o.manager_id).full_name:checkerName({owner_id:o.id})} for approval.` : ""; };
+  $("#tf_owner").onchange = hint; hint();
+  $("#tfCancel").onclick = () => t ? openTask(t.id) : closeSheet();
+  $("#taskForm").onsubmit = async e => { e.preventDefault();
+    const g = id => $("#"+id).value;
+    const p = {id:t?.id||"", title:g("tf_title"), owner_id:g("tf_owner"), code:g("tf_code"), due_date:g("tf_due"), priority:g("tf_pri"), frequency:g("tf_freq"), due_day:g("tf_dueday"), category:g("tf_cat"), raised_on:g("tf_raised"), support:g("tf_support"), next_step:g("tf_next"), source:g("tf_src"), source_ref:g("tf_ref")};
+    try{ const r = await API.rpc("save_task", {p}); toast(t?"Saved.":"Deliverable created."); await refresh(); openTask(r.id); }catch(err){ $("#tfErr").textContent = err.message; } };
+}
+
+/* ---------- people ---------- */
+function renderPeople(){
+  const ppl = [...S.people].sort((a,b)=> (b.active-a.active) || a.full_name.localeCompare(b.full_name));
+  const openCount = id => S.tasks.filter(t=>t.owner_id===id && !["completed","closed"].includes(t.status)).length;
+  $("#pane").innerHTML = `
+    <div class="bar"><p style="margin:0;color:var(--ink-2);flex:1 1 300px">Reporting lines decide who approves whom. A person signs in with the email listed here.</p><button class="btn primary" id="newPerson">Add person</button></div>
+    <div class="reg"><div class="row head prow"><span>Name</span><span>Email</span><span>Reports to (checker)</span><span>Role</span><span>Open</span></div>
+    ${ppl.map(p=>`<div class="row prow ${p.active?"":"off"}" data-pid="${esc(p.id)}" tabindex="0"><span class="ttl">${esc(p.full_name)}${p.active?"":" (inactive)"}</span><span class="sub">${esc(p.email)}</span><span class="flow">${esc(person(p.manager_id)?.full_name || (p.role==="master"?"— top of chain":"— (Master approves)"))}</span><span><span class="role ${esc(p.role)}">${p.role==="member"?"Team":esc(p.role)}</span></span><span class="mono">${openCount(p.id)}</span></div>`).join("")}</div>`;
+  $("#newPerson").onclick = () => { S.open={kind:"person", person:null}; renderSheet(); };
+  $("#pane").querySelectorAll("[data-pid]").forEach(r => r.onclick = () => { S.open={kind:"person", person:person(r.dataset.pid)}; renderSheet(); });
+}
+function renderPersonSheet(p){
+  const x = p || {role:"member", active:true};
+  const mgrs = S.people.filter(q=>q.active && q.id!==x.id).sort((a,b)=>a.full_name.localeCompare(b.full_name));
+  sheetFrame(`<h2>${p?esc(p.full_name):"Add person"}</h2>`, `
+    <form id="pf" style="display:grid;gap:12px">
+      <label class="f">Full name<input class="in" id="pf_name" required value="${esc(x.full_name||"")}"></label>
+      <label class="f">Work email (used to sign in)<input class="in" id="pf_email" type="email" required value="${esc(x.email||"")}"></label>
+      <label class="f">Reports to (approves their work)<select class="in" id="pf_mgr"><option value="">— nobody (Master approves)</option>${mgrs.map(q=>`<option value="${esc(q.id)}" ${q.id===x.manager_id?"selected":""}>${esc(q.full_name)}</option>`).join("")}</select></label>
+      <label class="f">Role<select class="in" id="pf_role">
+        <option value="member" ${x.role==="member"?"selected":""}>Team member</option>
+        <option value="admin" ${x.role==="admin"?"selected":""}>Admin: manage deliverables and people, cannot approve</option>
+        <option value="master" ${x.role==="master"?"selected":""}>Master: full rights, approves anything</option></select></label>
+      <label class="f">Area<input class="in" id="pf_area" value="${esc(x.area||"")}"></label>
+      ${p?`<label class="chk"><input type="checkbox" id="pf_active" ${x.active?"checked":""}> Active (can sign in)</label>`:""}
+      ${p?"":`<p style="margin:0;font-size:12px;color:var(--ink-3)">After adding someone here, create their login in Supabase (Authentication → Users → Invite user) with the same email.</p>`}
+      <div class="err" id="pfErr" role="alert"></div>
+      <div class="btns"><button class="btn primary" type="submit">${p?"Save":"Add person"}</button><button class="btn" type="button" id="pfCancel">Cancel</button></div>
+    </form>`);
+  $("#pfCancel").onclick = closeSheet;
+  $("#pf").onsubmit = async e => { e.preventDefault();
+    const q = {id:p?.id||"", full_name:$("#pf_name").value, email:$("#pf_email").value, manager_id:$("#pf_mgr").value, role:$("#pf_role").value, area:$("#pf_area").value, active: p ? $("#pf_active").checked : true};
+    try{ await API.rpc("save_person", {p:q}); toast("Saved."); closeSheet(); await refresh(); }catch(err){ $("#pfErr").textContent = err.message; } };
+}
+function openPasswordSheet(){
+  S.open={kind:"password"};
+  sheetFrame(`<h2>Change password</h2>`, `<form id="cp" style="display:grid;gap:12px">
+    <label class="f">New password<input class="in" id="cp1" type="password" autocomplete="new-password" minlength="8" required></label>
+    <label class="f">Confirm<input class="in" id="cp2" type="password" autocomplete="new-password" minlength="8" required></label>
+    <div class="err" id="cpErr"></div><div class="btns"><button class="btn primary" type="submit">Save password</button></div></form>`);
+  $("#cp").onsubmit = async e => { e.preventDefault(); const a=$("#cp1").value; if(a.length<8) return $("#cpErr").textContent="Use at least 8 characters."; if(a!==$("#cp2").value) return $("#cpErr").textContent="The two passwords don't match.";
+    try{ await API.setPassword(a); toast("Password changed."); closeSheet(); }catch(err){ $("#cpErr").textContent=err.message; } };
+}
+
+/* ============================================================================
+   Boot
+   ========================================================================== */
+async function refresh(rerender){
+  try{
+    const {people, tasks, me} = await API.loadAll();
+    S.people = people; S.tasks = tasks; S.byId = Object.fromEntries(people.map(p=>[p.id,p])); S.me = me;
+    if(!me){ const s = await API.session(); return s ? renderNoAccess(s.user?.email) : renderLogin(); }
+    const sheetOpen = S.open; renderShell(); if(sheetOpen && rerender) renderSheet();
+    if(rerender) toast("Up to date.");
+  }catch(e){ toast(e.message, true); }
+}
+(async function boot(){
+  const hash = location.hash || "";
+  if(/type=(recovery|invite)/.test(hash)) S.recovery = true;
+  if(/error_description=/.test(hash)){ const m = decodeURIComponent((hash.match(/error_description=([^&]+)/)||[])[1]||"").replace(/\+/g," "); history.replaceState(null,"",location.pathname); renderLogin(m || "That link has expired. Ask for a new one."); }
+  API.onAuth(async (ev) => {
+    if(ev==="PASSWORD_RECOVERY"){ S.recovery = true; return renderSetPassword(); }
+    if(ev==="SIGNED_OUT"){ S.me=null; S.open=null; closeSheet(); return renderLogin(); }
+    if(ev==="SIGNED_IN" && !S.me){ if(S.recovery) return renderSetPassword(); await refresh(); }
+  });
+  const s = await API.session();
+  if(!s){ if(!/error_description=/.test(hash)) renderLogin(); return; }
+  if(S.recovery) return renderSetPassword();
+  await refresh();
+  if(!API.demo){ document.addEventListener("visibilitychange", () => { if(document.visibilityState==="visible" && S.me && !S.open) refresh(); }); }
+})();
+</script>
+</body>
+</html>
